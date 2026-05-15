@@ -1,0 +1,263 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Create Post — Chillr{% endblock %}
+
+{% block content %}
+<main style="
+    flex: 1; overflow-y: auto;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 24px; min-height: 100vh;">
+
+    <form
+        class="create-post-shell"
+        method="post"
+        action="{% url 'create-post' %}"
+        enctype="multipart/form-data"
+    >
+        {% csrf_token %}
+
+        <!-- ══════════════════════════════
+             LEFT — Image Upload
+        ══════════════════════════════ -->
+        <div class="cp-left" id="cp-left">
+
+            <!-- Drop zone (shown when no image selected) -->
+            <div class="cp-dropzone" id="cp-dropzone">
+                <div class="cp-drop-icon">
+                    <span class="material-icons">photo_library</span>
+                </div>
+                <p class="cp-drop-title">Drag &amp; drop your photo</p>
+                <p class="cp-drop-sub">PNG, JPG, WEBP · max 10 MB</p>
+                <label class="cp-upload-label">
+                    <span class="material-icons" style="font-size:16px;">upload</span>
+                    Select from device
+                    <input type="file" id="fileInput" name="image" accept="image/*" hidden>
+                </label>
+            </div>
+
+            <!-- Preview (shown after pick) -->
+            <div class="cp-preview-wrap hidden" id="cp-preview-wrap">
+                <img id="previewImage" src="" alt="Preview" class="cp-preview-img">
+                <button type="button" class="cp-change-btn" id="cp-change-btn">
+                    <span class="material-icons" style="font-size:15px;">edit</span>
+                    Change photo
+                </button>
+                <!-- Hidden re-trigger input -->
+                <input type="file" id="fileInputChange" name="image" accept="image/*" hidden>
+            </div>
+
+        </div>
+
+        <!-- ══════════════════════════════
+             RIGHT — Details Panel
+        ══════════════════════════════ -->
+        <div class="cp-right">
+
+            <!-- Header -->
+            <div class="cp-panel-header">
+                <div class="cp-panel-user">
+                    <div class="cp-panel-avatar-ring">
+                        <img src="{{ uid.profile_pic.url }}" alt="{{ uid.username }}">
+                    </div>
+                    <span class="cp-panel-username">{{ uid.username }}</span>
+                </div>
+                <input type="submit" class="cp-share-btn" value="Share">
+            </div>
+
+            <!-- Scrollable body -->
+            <div class="cp-panel-body">
+
+                <!-- Caption -->
+                <div class="cp-section">
+                    <label class="cp-field-label">Caption</label>
+                    <div class="cp-textarea-wrap">
+                        <textarea
+                            class="cp-textarea"
+                            name="caption"
+                            id="captionInput"
+                            placeholder="Write something about this post…"
+                            maxlength="2200"
+                        ></textarea>
+                        <div class="cp-textarea-footer">
+                            <button type="button" class="cp-emoji-btn">
+                                <span class="material-icons">sentiment_satisfied_alt</span>
+                            </button>
+                            <span class="cp-char-count"><span id="charCount">0</span> / 2200</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Location -->
+                <div class="cp-section">
+                    <label class="cp-field-label">Location</label>
+                    <div class="cp-location-wrap" id="locationWrap">
+                        <div class="cp-location-trigger" id="locationTrigger">
+                            <span class="material-icons cp-field-icon">location_on</span>
+                            <span class="cp-location-text" id="selectedLocation">Add location</span>
+                            <span class="material-icons cp-chevron" id="locationChevron">expand_more</span>
+                        </div>
+                        <div class="cp-location-dropdown hidden" id="locationDropdown">
+                            <div class="cp-location-search-wrap">
+                                <span class="material-icons" style="font-size:16px;color:var(--text-muted);">search</span>
+                                <input
+                                    type="text"
+                                    class="cp-location-search"
+                                    id="locationSearch"
+                                    placeholder="Search location…"
+                                    autocomplete="off"
+                                >
+                            </div>
+                            <ul class="cp-location-list" id="locationList">
+                                <li data-value="Ahmedabad">Ahmedabad</li>
+                                <li data-value="Mumbai">Mumbai</li>
+                                <li data-value="Delhi">Delhi</li>
+                                <li data-value="Bangalore">Bangalore</li>
+                                <li data-value="London">London</li>
+                                <li data-value="New York">New York</li>
+                                <li data-value="Gandhinagar">Gandhinagar</li>
+                                <li data-value="Surat">Surat</li>
+                                <li data-value="Pune">Pune</li>
+                                <li data-value="Kolkata">Kolkata</li>
+                            </ul>
+                        </div>
+                        <input type="hidden" name="location" id="locationHidden">
+                    </div>
+                </div>
+
+                <!-- Tag People -->
+                <div class="cp-section">
+                    <label class="cp-field-label">Tag People</label>
+                    <div class="cp-input-row">
+                        <span class="material-icons cp-field-icon">person_add_alt</span>
+                        <input
+                            type="text"
+                            name="tag_people"
+                            class="cp-inline-input"
+                            placeholder="Search and tag people…"
+                        >
+                    </div>
+                </div>
+
+                <!-- Accessibility (optional extra polish) -->
+                <div class="cp-section">
+                    <label class="cp-field-label">Alt Text <span style="color:var(--text-dim);font-weight:400;font-size:0.75rem;">(optional)</span></label>
+                    <div class="cp-input-row">
+                        <span class="material-icons cp-field-icon">accessibility_new</span>
+                        <input
+                            type="text"
+                            name="alt_text"
+                            class="cp-inline-input"
+                            placeholder="Describe your photo for screen readers…"
+                        >
+                    </div>
+                </div>
+
+            </div><!-- /cp-panel-body -->
+
+        </div><!-- /cp-right -->
+
+    </form>
+
+</main>
+{% endblock %}
+
+{% block extra_css %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    /* ── Image pick & preview ── */
+    const fileInput      = document.getElementById('fileInput');
+    const fileInputChange= document.getElementById('fileInputChange');
+    const previewWrap    = document.getElementById('cp-preview-wrap');
+    const previewImg     = document.getElementById('previewImage');
+    const dropzone       = document.getElementById('cp-dropzone');
+    const changeBtn      = document.getElementById('cp-change-btn');
+
+    function showPreview(file) {
+        if (!file) return;
+        previewImg.src = URL.createObjectURL(file);
+        previewWrap.classList.remove('hidden');
+        dropzone.style.display = 'none';
+        /* copy file to main input so form submits it */
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+    }
+
+    fileInput.addEventListener('change', () => showPreview(fileInput.files[0]));
+    fileInputChange.addEventListener('change', () => showPreview(fileInputChange.files[0]));
+    changeBtn.addEventListener('click', () => fileInputChange.click());
+
+    /* Drag & drop */
+    const cpLeft = document.getElementById('cp-left');
+    cpLeft.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('drag-over'); });
+    cpLeft.addEventListener('dragleave', ()  => dropzone.classList.remove('drag-over'));
+    cpLeft.addEventListener('drop', e => {
+        e.preventDefault();
+        dropzone.classList.remove('drag-over');
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) showPreview(file);
+    });
+
+    /* ── Caption counter ── */
+    const captionInput = document.getElementById('captionInput');
+    const charCount    = document.getElementById('charCount');
+    captionInput.addEventListener('input', () => {
+        charCount.textContent = captionInput.value.length;
+    });
+
+    /* ── Location dropdown ── */
+    const trigger    = document.getElementById('locationTrigger');
+    const dropdown   = document.getElementById('locationDropdown');
+    const chevron    = document.getElementById('locationChevron');
+    const locText    = document.getElementById('selectedLocation');
+    const locHidden  = document.getElementById('locationHidden');
+    const locSearch  = document.getElementById('locationSearch');
+    const locList    = document.getElementById('locationList');
+
+    trigger.addEventListener('click', () => {
+        const open = !dropdown.classList.contains('hidden');
+        dropdown.classList.toggle('hidden', open);
+        trigger.classList.toggle('open', !open);
+        chevron.classList.toggle('rotated', !open);
+        if (!open) { locSearch.focus(); }
+    });
+
+    /* Close on outside click */
+    document.addEventListener('click', e => {
+        if (!trigger.closest('.cp-location-wrap').contains(e.target)) {
+            dropdown.classList.add('hidden');
+            trigger.classList.remove('open');
+            chevron.classList.remove('rotated');
+        }
+    });
+
+    /* Filter list */
+    locSearch.addEventListener('input', () => {
+        const q = locSearch.value.toLowerCase();
+        locList.querySelectorAll('li').forEach(li => {
+            li.style.display = li.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+
+    /* Select item */
+    locList.querySelectorAll('li').forEach(li => {
+        li.addEventListener('click', () => {
+            const val = li.dataset.value;
+            locHidden.value = val;
+            locText.textContent = val;
+            locText.classList.add('selected');
+            locList.querySelectorAll('li').forEach(i => i.classList.remove('selected'));
+            li.classList.add('selected');
+            dropdown.classList.add('hidden');
+            trigger.classList.remove('open');
+            chevron.classList.remove('rotated');
+        });
+    });
+})();
+</script>
+{% endblock %}

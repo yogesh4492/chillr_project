@@ -1,0 +1,507 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chillr — OTP Verification</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-deep:    #080b14;
+            --bg-card:    rgba(14, 18, 32, 0.72);
+            --border:     rgba(255,255,255,0.08);
+            --accent:     #f5a623;
+            --accent-dim: rgba(245,166,35,0.18);
+            --text-main:  #e8eaf6;
+            --text-muted: rgba(232,234,246,0.48);
+            --blob-a:     #1a2a5e;
+            --blob-b:     #3d1a6e;
+            --blob-c:     #1a4a3a;
+            --error-bg:   rgba(220,60,60,0.12);
+            --error-txt:  #ff8080;
+            --success-bg: rgba(34,197,94,0.10);
+            --success-border: rgba(34,197,94,0.28);
+            --success-txt: #4ade80;
+        }
+
+        html, body { height: 100%; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg-deep);
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ── Blobs ── */
+        .blobs { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .blob {
+            position: absolute; border-radius: 50%;
+            filter: blur(90px); opacity: 0.55;
+            animation: drift 18s ease-in-out infinite alternate;
+        }
+        .blob-1 { width: 600px; height: 600px; background: var(--blob-a); top: -140px; left: -160px; animation-duration: 20s; }
+        .blob-2 { width: 480px; height: 480px; background: var(--blob-b); bottom: -100px; right: -100px; animation-duration: 16s; animation-delay: -5s; }
+        .blob-3 { width: 340px; height: 340px; background: var(--blob-c); top: 40%; left: 40%; animation-duration: 22s; animation-delay: -9s; }
+
+        @keyframes drift {
+            from { transform: translate(0,0) scale(1); }
+            to   { transform: translate(40px,30px) scale(1.06); }
+        }
+
+        /* ── Shell ── */
+        .shell {
+            position: relative; z-index: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: min(860px, 96vw);
+            min-height: 520px;
+            border-radius: 28px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+            backdrop-filter: blur(2px);
+        }
+
+        /* ── Left ── */
+        .left {
+            background: linear-gradient(145deg, #0d1528 0%, #10182e 60%, #0f1f1a 100%);
+            padding: 60px 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+        .left::after {
+            content: ''; position: absolute; inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.022'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+        }
+
+        .brand { position: relative; }
+        .brand-name {
+            font-family: 'Syne', sans-serif;
+            font-size: 3rem; font-weight: 800; letter-spacing: -1px;
+            background: linear-gradient(135deg, #fff 30%, var(--accent));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            line-height: 1; margin-bottom: 14px;
+        }
+        .brand-sub {
+            font-size: 0.9rem; font-weight: 300; color: var(--text-muted);
+            letter-spacing: 3px; text-transform: uppercase;
+        }
+        .brand-dots { display: flex; gap: 6px; margin-top: 36px; }
+        .brand-dots span {
+            display: block; width: 8px; height: 8px; border-radius: 50%;
+            background: var(--accent); opacity: 0.25;
+        }
+        .brand-dots span:nth-child(2) { opacity: 0.55; width: 24px; border-radius: 4px; }
+        .brand-dots span:nth-child(3) { opacity: 0.9; }
+
+        /* Shield illustration */
+        .shield-wrap {
+            position: relative;
+            margin-top: 44px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .shield-icon {
+            width: 72px; height: 72px;
+            border-radius: 20px;
+            background: var(--accent-dim);
+            border: 1px solid rgba(245,166,35,0.22);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px;
+            animation: pulse-glow 3s ease-in-out infinite;
+        }
+        @keyframes pulse-glow {
+            0%,100% { box-shadow: 0 0 0 0 rgba(245,166,35,0); }
+            50%      { box-shadow: 0 0 0 12px rgba(245,166,35,0.07); }
+        }
+        .shield-hint {
+            font-size: 0.86rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            line-height: 1.65;
+            max-width: 220px;
+        }
+        .shield-hint strong {
+            display: block;
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 0.95rem;
+            margin-bottom: 6px;
+        }
+
+        .left-footer {
+            position: relative;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        /* ── Right ── */
+        .right {
+            background: var(--bg-card);
+            backdrop-filter: blur(28px);
+            padding: 52px 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-left: 1px solid var(--border);
+        }
+
+        .card-header { margin-bottom: 30px; }
+        .card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.75rem; font-weight: 700;
+            color: var(--text-main); margin-bottom: 6px;
+        }
+        .card-sub { font-size: 0.875rem; color: var(--text-muted); font-weight: 300; line-height: 1.5; }
+
+        /* ── Alerts ── */
+        .alert {
+            display: flex; align-items: center; gap: 10px;
+            border-radius: 10px; padding: 10px 14px;
+            margin-bottom: 22px; font-size: 0.84rem;
+        }
+        .alert-error  { background: var(--error-bg);   border: 1px solid rgba(255,100,100,0.25); color: var(--error-txt); }
+        .alert-success{ background: var(--success-bg); border: 1px solid var(--success-border);  color: var(--success-txt); }
+        .alert-icon {
+            width: 18px; height: 18px; flex-shrink: 0;
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 11px; font-weight: 700; color: #fff;
+        }
+        .alert-error   .alert-icon { background: rgba(220,60,60,0.5); }
+        .alert-success .alert-icon { background: rgba(34,197,94,0.45); }
+
+        /* ── OTP boxes ── */
+        .otp-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 24px;
+        }
+        .otp-box {
+            flex: 1;
+            aspect-ratio: 1;
+            max-width: 56px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            font-family: 'Syne', sans-serif;
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--text-main);
+            text-align: center;
+            outline: none;
+            transition: border-color 0.2s, background 0.2s;
+            caret-color: var(--accent);
+        }
+        .otp-box::placeholder { color: rgba(232,234,246,0.15); font-size: 0.9rem; }
+        .otp-box:focus {
+            border-color: rgba(245,166,35,0.55);
+            background: rgba(245,166,35,0.05);
+        }
+        /* hidden real input for form submission */
+        #otp-hidden { display: none; }
+
+        /* ── Timer ring ── */
+        .timer-wrap {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 22px;
+        }
+        .timer-ring {
+            position: relative;
+            width: 48px; height: 48px; flex-shrink: 0;
+        }
+        .timer-ring svg { transform: rotate(-90deg); }
+        .ring-bg  { fill: none; stroke: var(--border); stroke-width: 3.5; }
+        .ring-arc {
+            fill: none;
+            stroke: var(--accent);
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            stroke-dasharray: 113;    /* 2π × 18 */
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear, stroke 0.4s;
+        }
+        .ring-arc.expired { stroke: #ff8080; }
+        .ring-label {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-family: 'Syne', sans-serif;
+            font-size: 0.8rem; font-weight: 700;
+            color: var(--accent);
+        }
+        .ring-label.expired { color: var(--error-txt); }
+        .timer-text {
+            font-size: 0.84rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+        .timer-text strong { color: var(--text-main); font-weight: 500; }
+
+        /* Resend link */
+        .resend-row {
+            margin-bottom: 6px;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            display: none;
+        }
+        .resend-row.visible { display: block; }
+        .resend-btn {
+            background: none; border: none; padding: 0;
+            color: var(--accent); font-weight: 500;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.82rem; cursor: pointer;
+            text-decoration: underline;
+            transition: opacity 0.15s;
+        }
+        .resend-btn:hover { opacity: 0.75; }
+
+        /* ── Submit button ── */
+        .btn-verify {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent);
+            border: none; border-radius: 12px;
+            font-family: 'Syne', sans-serif;
+            font-size: 0.95rem; font-weight: 600;
+            color: #1a0e00; cursor: pointer;
+            letter-spacing: 0.3px;
+            transition: opacity 0.15s, transform 0.15s;
+        }
+        .btn-verify:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+        .btn-verify:active:not(:disabled) { transform: translateY(0); opacity: 1; }
+        .btn-verify:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
+
+        /* ── Footer links ── */
+        .footer-links {
+            margin-top: 24px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+        }
+        .footer-links a {
+            color: var(--accent); text-decoration: none;
+            font-weight: 500; transition: opacity 0.15s;
+        }
+        .footer-links a:hover { opacity: 0.75; }
+
+        /* ── Mobile ── */
+        @media (max-width: 640px) {
+            .shell { grid-template-columns: 1fr; min-height: auto; }
+            .left { padding: 40px 32px 32px; }
+            .shield-wrap { display: none; }
+            .brand-name { font-size: 2.2rem; }
+            .left-footer { display: none; }
+            .right { padding: 36px 28px 44px; border-left: none; border-top: 1px solid var(--border); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+</div>
+
+<div class="shell">
+
+    <!-- LEFT -->
+    <div class="left">
+        <div class="brand">
+            <div class="brand-name">Chillr</div>
+            <div class="brand-sub">Connect &bull; Share &bull; Chill</div>
+            <div class="brand-dots"><span></span><span></span><span></span></div>
+        </div>
+
+        <div class="shield-wrap">
+            <div class="shield-icon">🛡️</div>
+            <div class="shield-hint">
+                <strong>Check your inbox</strong>
+                We sent a 6-digit code to your email. Enter it within 30 seconds — codes expire quickly to keep your account safe.
+            </div>
+        </div>
+
+        <div class="left-footer">&copy; 2025 Chillr &mdash; All rights reserved</div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="right">
+
+        {% if e_msg %}
+        <div class="alert alert-error">
+            <div class="alert-icon">!</div>
+            <span>{{ e_msg }}</span>
+        </div>
+        {% endif %}
+
+        {% if success_msg %}
+        <div class="alert alert-success">
+            <div class="alert-icon">✓</div>
+            <span>{{ success_msg }}</span>
+        </div>
+        {% endif %}
+
+        <div class="card-header">
+            <div class="card-title">OTP Verification</div>
+            <div class="card-sub">Enter the 6-digit code sent to your email</div>
+        </div>
+
+        <form method="post" action="{% url 'otp' %}" id="otp-form">
+            {% csrf_token %}
+            <input type="hidden" name="email" value="{{ email }}">
+            <input type="hidden" name="OTP" id="otp-hidden">
+
+            <!-- 6 individual digit boxes -->
+            <div class="otp-row" id="otp-row">
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" placeholder="·">
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" placeholder="·">
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" placeholder="·">
+                <input class="otp-box" type="text" maxlength="1" inputmode="numeric" placeholder="·">
+            </div>
+
+            <!-- Countdown ring -->
+            <div class="timer-wrap">
+                <div class="timer-ring">
+                    <svg viewBox="0 0 36 36" width="48" height="48">
+                        <circle class="ring-bg"  cx="18" cy="18" r="15"/>
+                        <circle class="ring-arc" cx="18" cy="18" r="15" id="ring-arc"/>
+                    </svg>
+                    <div class="ring-label" id="ring-label">30</div>
+                </div>
+                <div class="timer-text" id="timer-text">
+                    <strong>Code expires in <span id="timer-sec">30</span>s</strong>
+                    Submit before it runs out
+                </div>
+            </div>
+
+            <div class="resend-row" id="resend-row">
+                Didn't get it? <button type="button" class="resend-btn" id="resend-btn">Resend OTP</button>
+            </div>
+
+            <button type="submit" class="btn-verify" id="submit-btn">Verify &amp; Continue</button>
+        </form>
+
+        <div class="footer-links">
+            <span>Know your password? <a href="{% url 'login' %}">Login</a></span>
+            <a href="{% url 'signup' %}">Create Account</a>
+        </div>
+
+    </div>
+</div>
+
+<script>
+(function () {
+    const DURATION   = 30;
+    const boxes      = Array.from(document.querySelectorAll('.otp-box'));
+    const hiddenOtp  = document.getElementById('otp-hidden');
+    const submitBtn  = document.getElementById('submit-btn');
+    const ringArc    = document.getElementById('ring-arc');
+    const ringLabel  = document.getElementById('ring-label');
+    const timerSec   = document.getElementById('timer-sec');
+    const timerText  = document.getElementById('timer-text');
+    const resendRow  = document.getElementById('resend-row');
+    const resendBtn  = document.getElementById('resend-btn');
+    const CIRCUMF    = 2 * Math.PI * 15; // ≈ 94.25
+
+    let timeLeft = DURATION;
+    let interval = null;
+
+    /* ── OTP box auto-advance ── */
+    boxes.forEach((box, i) => {
+        box.addEventListener('input', () => {
+            box.value = box.value.replace(/\D/g, '').slice(-1);
+            if (box.value && i < boxes.length - 1) boxes[i + 1].focus();
+            syncHidden();
+        });
+        box.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && !box.value && i > 0) boxes[i - 1].focus();
+        });
+        box.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pasted = (e.clipboardData || window.clipboardData).getData('text').replace(/\D/g, '');
+            pasted.split('').slice(0, boxes.length - i).forEach((ch, j) => {
+                if (boxes[i + j]) boxes[i + j].value = ch;
+            });
+            const nextEmpty = boxes.find(b => !b.value);
+            (nextEmpty || boxes[boxes.length - 1]).focus();
+            syncHidden();
+        });
+    });
+
+    function syncHidden() {
+        hiddenOtp.value = boxes.map(b => b.value).join('');
+    }
+
+    /* ── Timer ── */
+    function updateRing(secs) {
+        const pct    = secs / DURATION;
+        const offset = CIRCUMF * (1 - pct);
+        ringArc.style.strokeDasharray  = CIRCUMF;
+        ringArc.style.strokeDashoffset = offset;
+        ringLabel.textContent = secs;
+        timerSec.textContent  = secs;
+    }
+
+    function startTimer() {
+        clearInterval(interval);
+        timeLeft = DURATION;
+        submitBtn.disabled = false;
+        submitBtn.style.opacity = '';
+        resendRow.classList.remove('visible');
+        ringArc.classList.remove('expired');
+        ringLabel.classList.remove('expired');
+        timerText.innerHTML = '<strong>Code expires in <span id="timer-sec">' + timeLeft + '</span>s</strong> Submit before it runs out';
+
+        updateRing(timeLeft);
+
+        interval = setInterval(() => {
+            timeLeft--;
+            updateRing(timeLeft);
+
+            if (timeLeft <= 0) {
+                clearInterval(interval);
+                submitBtn.disabled = true;
+                ringArc.classList.add('expired');
+                ringLabel.classList.add('expired');
+                timerText.innerHTML = '<strong style="color:var(--error-txt)">Code expired</strong> Request a new one below';
+                resendRow.classList.add('visible');
+            }
+        }, 1000);
+    }
+
+    resendBtn.addEventListener('click', () => {
+        boxes.forEach(b => b.value = '');
+        boxes[0].focus();
+        syncHidden();
+        startTimer();
+    });
+
+    /* Form: collapse boxes → hidden field before submit */
+    document.getElementById('otp-form').addEventListener('submit', syncHidden);
+
+    /* Kick off */
+    updateRing(DURATION);
+    startTimer();
+    boxes[0].focus();
+})();
+</script>
+</body>
+</html>

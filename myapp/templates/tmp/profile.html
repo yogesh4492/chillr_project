@@ -1,0 +1,98 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+{% block title %}{{ uid.username }} — Chillr{% endblock %}
+{% block content %}
+
+<div style="max-width:900px;margin:0 auto;padding:0 24px 48px;">
+
+  <!-- PROFILE HEADER -->
+  <div class="profile-header afu">
+    <div class="profile-avatar-ring">
+      {% if uid.profile_pic %}
+      <img src="{{ uid.profile_pic.url }}" class="profile-avatar" alt="{{ uid.username }}">
+      {% else %}
+      <div class="profile-avatar" style="background:linear-gradient(135deg,#FF5524,#FF9240);display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:800;color:white;">
+        {{ uid.username|first|upper }}
+      </div>
+      {% endif %}
+    </div>
+
+    <div style="flex:1;">
+      <div class="profile-info-row afu-2" style="display:flex;align-items:center;gap:16px;margin-bottom:14px;flex-wrap:wrap;">
+        <span class="profile-username">{{ uid.username }}</span>
+        <a href="{% url 'edit-profile' %}" class="btn btn-secondary btn-sm">Edit Profile</a>
+        <button class="btn btn-secondary btn-sm">Archive</button>
+        <a href="{% url 'edit-profile' %}" class="btn-icon btn" style="padding:7px;"><span class="material-icons" style="font-size:18px;color:var(--text-2);">settings</span></a>
+      </div>
+
+      <div class="profile-stats-row afu-3">
+        <div>
+          <div class="stat-num">{{ user_posts.count }}</div>
+          <div class="stat-label">posts</div>
+        </div>
+        <div>
+          <div class="stat-num">0</div>
+          <div class="stat-label">followers</div>
+        </div>
+        <div>
+          <div class="stat-num">0</div>
+          <div class="stat-label">following</div>
+        </div>
+      </div>
+
+      <div class="afu-4" style="margin-top:4px;">
+        {% if uid.name %}<div class="profile-name" style="margin-bottom:4px;">{{ uid.name }}</div>{% endif %}
+        {% if uid.bio %}<div class="profile-bio">{{ uid.bio }}</div>{% endif %}
+        {% if uid.description %}<div class="profile-bio" style="margin-top:4px;">{{ uid.description }}</div>{% endif %}
+        {% if uid.link %}<a href="{{ uid.link }}" class="profile-link" target="_blank">🔗 {{ uid.link }}</a>{% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- HIGHLIGHTS -->
+  <div class="highlights-row">
+    <a href="{% url 'create-post' %}" style="display:flex;flex-direction:column;align-items:center;gap:8px;flex-shrink:0;cursor:pointer;text-decoration:none;">
+      <div class="highlight-ring">
+        <span class="material-icons highlight-add">add</span>
+      </div>
+      <span class="highlight-label" style="color:var(--text-2);">New</span>
+    </a>
+  </div>
+
+  <!-- TABS -->
+  <div class="profile-tabs">
+    <div class="profile-tab active">
+      <span class="material-icons" style="font-size:16px;">grid_on</span> Posts
+    </div>
+    <div class="profile-tab">
+      <span class="material-icons" style="font-size:16px;">bookmark_border</span> Saved
+    </div>
+    <div class="profile-tab">
+      <span class="material-icons" style="font-size:16px;">person_outline</span> Tagged
+    </div>
+  </div>
+
+  <!-- POSTS GRID -->
+  {% if user_posts %}
+  <div class="posts-grid">
+    {% for post in user_posts %}
+    <div class="grid-post">
+      {% if post.image %}<img src="{{ post.image.url }}" alt="Post">{% endif %}
+      <div class="grid-post-overlay">
+        <div class="overlay-stat"><span class="material-icons" style="font-size:18px;">favorite</span> 0</div>
+        <div class="overlay-stat"><span class="material-icons" style="font-size:18px;">chat_bubble</span> 0</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state" style="margin-top:32px;">
+    <span class="material-icons">photo_camera</span>
+    <h3>No posts yet</h3>
+    <p>When you share photos, they'll appear here.</p>
+    <a href="{% url 'create-post' %}" class="btn btn-primary" style="margin-top:20px;display:inline-flex;">Share your first post</a>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

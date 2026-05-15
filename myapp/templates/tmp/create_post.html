@@ -1,0 +1,131 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+{% block title %}Create Post — Chillr{% endblock %}
+{% block content %}
+
+<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;padding:32px 24px;">
+
+  <form class="create-post-layout" method="post" action="{% url 'create-post' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- LEFT: IMAGE UPLOAD -->
+    <div class="create-post-upload" id="uploadZone">
+      <div class="upload-prompt" id="uploadPrompt">
+        <span class="material-icons">photo_library</span>
+        <p>Drag & drop or click to select an image</p>
+        <label class="btn btn-primary" style="cursor:pointer;">
+          Choose Photo
+          <input type="file" id="fileInput" name="image" accept="image/*" hidden required>
+        </label>
+      </div>
+      <img id="previewImage" style="display:none;width:100%;height:100%;object-fit:cover;position:absolute;inset:0;" alt="Preview">
+    </div>
+
+    <!-- RIGHT: POST DETAILS -->
+    <div class="create-post-form">
+
+      <div class="cpf-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          {% if uid.profile_pic %}<img src="{{ uid.profile_pic.url }}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);" alt="">{% endif %}
+          <span style="font-weight:700;font-size:13.5px;color:var(--text-1);">{{ uid.username }}</span>
+        </div>
+        <button type="submit" class="btn btn-primary btn-sm">Share ✦</button>
+      </div>
+
+      <div class="cpf-body">
+
+        <!-- Caption -->
+        <div class="cpf-row">
+          <div class="cpf-row-label"><span class="material-icons">edit</span> Caption</div>
+          <textarea class="input" name="caption" placeholder="Write a caption… what's the vibe?" style="min-height:100px;font-size:13.5px;"></textarea>
+          <div style="text-align:right;margin-top:6px;font-size:11px;color:var(--text-3);">0 / 2200</div>
+        </div>
+
+        <!-- Location -->
+        <div class="cpf-row">
+          <details class="loc-details">
+            <summary>
+              <div class="cpf-row-label" style="margin:0;"><span class="material-icons">location_on</span> <span id="selectedLocation" style="font-weight:500;">Add location</span></div>
+              <span class="material-icons" style="color:var(--text-3);font-size:18px;">expand_more</span>
+            </summary>
+            <div class="loc-menu" style="margin-top:10px;">
+              <input type="text" placeholder="Search location…" id="locSearch">
+              <input type="hidden" name="location" id="locationHidden">
+              <ul id="locList">
+                <li onclick="pickLoc(this)">Ahmedabad</li>
+                <li onclick="pickLoc(this)">Mumbai</li>
+                <li onclick="pickLoc(this)">Delhi</li>
+                <li onclick="pickLoc(this)">Bangalore</li>
+                <li onclick="pickLoc(this)">Surat</li>
+                <li onclick="pickLoc(this)">London</li>
+                <li onclick="pickLoc(this)">New York</li>
+                <li onclick="pickLoc(this)">Dubai</li>
+                <li onclick="pickLoc(this)">Gandhinagar</li>
+              </ul>
+            </div>
+          </details>
+        </div>
+
+        <!-- Tag People -->
+        <div class="cpf-row">
+          <div class="cpf-row-label"><span class="material-icons">person_add</span> Tag people</div>
+          <input class="input" type="text" name="tag_people" placeholder="Search people to tag…">
+        </div>
+
+        <!-- Accessibility -->
+        <div class="cpf-row">
+          <div class="cpf-row-label"><span class="material-icons">accessibility_new</span> Alt text</div>
+          <input class="input" type="text" placeholder="Describe this photo for accessibility…">
+        </div>
+
+      </div>
+    </div>
+  </form>
+</div>
+
+{% block extra_js %}
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const preview = document.getElementById('previewImage');
+  const prompt = document.getElementById('uploadPrompt');
+
+  fileInput.addEventListener('change', function() {
+    if(this.files[0]) {
+      preview.src = URL.createObjectURL(this.files[0]);
+      preview.style.display = 'block';
+      prompt.style.display = 'none';
+    }
+  });
+
+  // Drag & drop
+  const zone = document.getElementById('uploadZone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--accent)'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if(file && file.type.startsWith('image/')) {
+      fileInput.files = e.dataTransfer.files;
+      preview.src = URL.createObjectURL(file);
+      preview.style.display = 'block';
+      prompt.style.display = 'none';
+    }
+  });
+
+  function pickLoc(el) {
+    const val = el.innerText;
+    document.getElementById('selectedLocation').innerText = '📍 ' + val;
+    document.getElementById('locationHidden').value = val;
+    el.closest('details').removeAttribute('open');
+  }
+
+  // Location filter
+  document.getElementById('locSearch').addEventListener('input', function() {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll('#locList li').forEach(li => {
+      li.style.display = li.innerText.toLowerCase().includes(q) ? '' : 'none';
+    });
+  });
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+{% block title %}Edit Profile — Chillr{% endblock %}
+{% block content %}
+
+<div style="max-width:680px;margin:0 auto;padding:40px 24px 64px;">
+
+  <!-- PAGE HEADER -->
+  <div style="margin-bottom:36px;" class="afu">
+    <h1 style="font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--text-1);letter-spacing:-0.5px;">Edit Profile</h1>
+    <p style="color:var(--text-3);font-size:14px;margin-top:4px;">Update your info and how others see you</p>
+  </div>
+
+  <form method="post" action="{% url 'edit-profile' %}" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- AVATAR ROW -->
+    <div class="ep-avatar-row afu-2">
+      <div style="position:relative;">
+        {% if uid.profile_pic %}
+        <img id="profilePreview" src="{{ uid.profile_pic.url }}" class="ep-avatar" alt="">
+        {% else %}
+        <div id="profilePreview" class="ep-avatar" style="background:var(--gradient);display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:white;">
+          {{ uid.username|first|upper }}
+        </div>
+        {% endif %}
+        <div style="position:absolute;bottom:0;right:0;width:24px;height:24px;border-radius:50%;background:var(--gradient);display:flex;align-items:center;justify-content:center;border:2px solid var(--bg);">
+          <span class="material-icons" style="font-size:13px;color:white;">edit</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-weight:700;font-size:15px;color:var(--text-1);margin-bottom:4px;">{{ uid.username }}</div>
+        <label class="ep-change-label">
+          Change photo
+          <input type="file" id="imageInput" name="profile_pic" accept="image/*" class="hidden" style="display:none;">
+        </label>
+      </div>
+    </div>
+
+    <!-- FORM FIELDS -->
+    <div style="display:grid;gap:20px;" class="afu-3">
+
+      <div class="form-group">
+        <label class="form-label">Username</label>
+        <input type="text" name="username" value="{{ uid.username }}" class="input" placeholder="your_username">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Display Name</label>
+        <input type="text" name="name" value="{{ uid.name|default:'' }}" class="input" placeholder="Your full name">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Bio</label>
+        <input type="text" name="bio" value="{{ uid.bio|default:'' }}" class="input" placeholder="Short bio — what's your vibe?">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">About me</label>
+        <textarea name="description" class="input" rows="3" placeholder="Tell people more about yourself…">{{ uid.description|default:'' }}</textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Website / Link</label>
+        <div style="position:relative;">
+          <span class="material-icons" style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:18px;">link</span>
+          <input type="text" name="website" value="{{ uid.link|default:'' }}" class="input" placeholder="https://yoursite.com" style="padding-left:42px;">
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ACTION BUTTONS -->
+    <div style="display:flex;justify-content:flex-end;gap:12px;margin-top:36px;padding-top:28px;border-top:1px solid var(--border);" class="afu-4">
+      <a href="{% url 'profile' %}" class="btn btn-secondary">Cancel</a>
+      <button type="submit" class="btn btn-primary">Save Changes ✦</button>
+    </div>
+
+  </form>
+</div>
+
+{% block extra_js %}
+<script>
+  document.getElementById('imageInput').addEventListener('change', function() {
+    if(this.files[0]) {
+      const el = document.getElementById('profilePreview');
+      el.src = URL.createObjectURL(this.files[0]);
+      el.style.display = 'block';
+    }
+  });
+</script>
+{% endblock %}
+{% endblock %}

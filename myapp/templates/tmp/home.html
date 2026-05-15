@@ -1,0 +1,145 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+{% block title %}Home — Chillr{% endblock %}
+{% block content %}
+
+<div style="display:flex;gap:32px;max-width:960px;margin:0 auto;padding:32px 24px;">
+
+  <!-- FEED -->
+  <div style="flex:1;min-width:0;">
+
+    <!-- STORIES -->
+    <div class="stories-bar afu">
+      <!-- Your Story -->
+      <div class="story-item">
+        <div class="story-ring-wrap add-story">
+          <div class="story-ring-inner">
+            {% if uid.profile_pic %}
+            <img src="{{ uid.profile_pic.url }}" class="story-avatar" alt="">
+            {% else %}
+            <div class="story-add-btn"><span class="material-icons">add</span></div>
+            {% endif %}
+          </div>
+        </div>
+        <span class="story-name">Your story</span>
+      </div>
+      <!-- Placeholder stories -->
+      {% for i in "12345" %}
+      <div class="story-item">
+        <div class="story-ring-wrap">
+          <div class="story-ring-inner">
+            <div class="story-avatar" style="background:linear-gradient(135deg,#{{ forloop.counter }}a1a1a,#2a2a2a);display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--text-2);font-size:17px;">{{ forloop.counter }}</div>
+          </div>
+        </div>
+        <span class="story-name">user_{{ forloop.counter }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- POSTS -->
+    {% for post in post_all %}
+    <article class="post-card afu-{{ forloop.counter|divisibleby:3|yesno:'3,2,2' }}">
+
+      <div class="post-header">
+        <div class="post-author">
+          <div class="avatar-ring">
+            {% if post.user.profile_pic %}<img src="{{ post.user.profile_pic.url }}" alt="">{% endif %}
+          </div>
+          <div>
+            <div class="post-author-name">{{ post.user.username }}</div>
+            {% if post.location %}<div class="post-author-loc">📍 {{ post.location }}</div>{% endif %}
+          </div>
+        </div>
+        <div class="post-menu">
+          <button class="post-more-btn"><span class="material-icons">more_horiz</span></button>
+          <div class="post-menu-dropdown">
+            <button class="menu-item">Edit post</button>
+            <button class="menu-item">Copy link</button>
+            <button class="menu-item danger">Delete</button>
+          </div>
+        </div>
+      </div>
+
+      {% if post.image %}
+      <img src="{{ post.image.url }}" class="post-image" alt="Post by {{ post.user.username }}" loading="lazy">
+      {% endif %}
+
+      <div class="post-actions">
+        <div class="post-actions-left">
+          <button class="action-btn like-btn">
+            <span class="material-icons">favorite_border</span>
+          </button>
+          <button class="action-btn">
+            <span class="material-icons">chat_bubble_outline</span>
+          </button>
+          <button class="action-btn">
+            <span class="material-icons">send</span>
+          </button>
+        </div>
+        <button class="action-btn bookmark-btn">
+          <span class="material-icons">bookmark_border</span>
+        </button>
+      </div>
+
+      <div class="post-body">
+        {% if post.caption %}
+        <p class="post-caption"><strong>{{ post.user.username }}</strong> {{ post.caption }}</p>
+        {% endif %}
+        <p class="post-time">{{ post.whenpublished }}</p>
+      </div>
+
+      <div class="post-comment-form">
+        <span class="material-icons" style="color:var(--text-3);font-size:20px;">sentiment_satisfied_alt</span>
+        <input class="comment-input" type="text" placeholder="Add a comment…" autocomplete="off">
+        <button class="comment-post-btn" type="button">Post</button>
+      </div>
+
+    </article>
+    {% empty %}
+    <div class="empty-state">
+      <span class="material-icons">photo_camera</span>
+      <h3>No posts yet</h3>
+      <p>Start following people or create your first post</p>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <aside class="right-panel" style="display:none;" id="rightPanel">
+    <div class="panel-profile-row">
+      {% if uid.profile_pic %}<img src="{{ uid.profile_pic.url }}" class="panel-avatar" alt="">{% endif %}
+      <div style="flex:1;min-width:0;">
+        <div class="panel-username">{{ uid.username }}</div>
+        <div class="panel-email">{{ uid.email }}</div>
+      </div>
+      <a href="{% url 'logout' %}" style="font-size:12px;font-weight:700;color:var(--text-3);">Switch</a>
+    </div>
+
+    <div class="panel-section-title">Suggested for you</div>
+
+    {% for i in "123" %}
+    <div class="suggestion-item">
+      <div class="sugg-avatar">{{ forloop.counter }}</div>
+      <div>
+        <div class="sugg-name">explorer_{{ forloop.counter }}</div>
+        <div class="sugg-sub">New to Chillr</div>
+      </div>
+      <button class="follow-btn">Follow</button>
+    </div>
+    {% endfor %}
+
+    <div style="margin-top:32px;font-size:11px;color:var(--text-3);line-height:1.8;">
+      About · Help · Press · API · Privacy · Terms<br>
+      © 2026 Chillr
+    </div>
+  </aside>
+
+</div>
+
+<script>
+  // Show right panel on large screens
+  if(window.innerWidth >= 1100) {
+    document.getElementById('rightPanel').style.display = 'block';
+  }
+</script>
+{% endblock %}

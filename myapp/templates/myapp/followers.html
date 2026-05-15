@@ -1,0 +1,339 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Followers - Chillr{% endblock %}
+
+{% block content %}
+
+<style>
+/* ══════════════════════════════════════
+   Followers — scoped styles
+══════════════════════════════════════ */
+
+.followers-page {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    justify-content: center;
+    padding: 32px 24px;
+}
+
+.followers-card {
+    width: 100%;
+    max-width: 640px;
+    background: var(--bg-surface);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    display: flex;
+    flex-direction: column;
+    align-self: flex-start;
+}
+
+/* ── Header ── */
+.followers-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: var(--bg-surface);
+    backdrop-filter: blur(20px);
+    z-index: 10;
+}
+.followers-back {
+    width: 36px; height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all var(--transition);
+    flex-shrink: 0;
+}
+.followers-back:hover {
+    color: var(--text-main);
+    border-color: var(--border-hover);
+}
+.followers-back .material-icons { font-size: 20px; }
+.followers-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--text-main);
+}
+
+/* ── Search ── */
+.followers-search-wrap {
+    position: relative;
+    padding: 16px 20px 8px;
+}
+.followers-search-icon {
+    position: absolute;
+    left: 34px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 20px;
+    pointer-events: none;
+}
+.followers-search {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 11px 16px 11px 42px;
+    color: var(--text-main);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color var(--transition), background var(--transition);
+}
+.followers-search::placeholder { color: var(--text-dim); }
+.followers-search:focus {
+    border-color: rgba(245,166,35,0.45);
+    background: rgba(245,166,35,0.03);
+}
+
+/* ── List ── */
+.followers-list {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 20px 20px;
+    gap: 4px;
+}
+
+/* ── Follower row ── */
+.follower-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-lg);
+    transition: background var(--transition);
+}
+.follower-row:hover { background: var(--bg-hover); }
+
+.follower-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+    text-decoration: none;
+}
+.follower-avatar-ring {
+    width: 46px; height: 46px;
+    border-radius: var(--radius-full);
+    padding: 2px;
+    background: linear-gradient(135deg, var(--accent), #f97316);
+    flex-shrink: 0;
+}
+.follower-avatar-ring img {
+    width: 100%; height: 100%;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    border: 2px solid var(--bg-deep);
+    display: block;
+}
+.follower-info { min-width: 0; }
+.follower-username {
+    font-weight: 700;
+    font-size: 0.875rem;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+.follower-name {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ── Action buttons ── */
+.follower-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btn-remove {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 14px;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    background: rgba(244,63,94,0.12);
+    color: #f87171;
+    border: 1px solid rgba(244,63,94,0.25);
+    text-decoration: none;
+    transition: background var(--transition), transform var(--transition);
+}
+.btn-remove:hover {
+    background: rgba(244,63,94,0.22);
+    transform: translateY(-1px);
+}
+
+.btn-follow-back {
+    display: inline-flex;
+    align-items: center;
+    padding: 7px 16px;
+    border-radius: var(--radius-full);
+    font-size: 0.8rem;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    background: var(--accent);
+    color: #1a0e00;
+    border: none;
+    text-decoration: none;
+    transition: background var(--transition), transform var(--transition);
+}
+.btn-follow-back:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+}
+
+.btn-unfollow {
+    background: var(--bg-hover);
+    color: var(--text-main);
+    border: 1px solid var(--border);
+}
+.btn-unfollow:hover {
+    border-color: var(--border-hover);
+    background: rgba(255,255,255,0.08);
+}
+
+/* ── Empty state ── */
+.followers-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-muted);
+}
+.followers-empty .material-icons {
+    font-size: 52px;
+    opacity: 0.2;
+    display: block;
+    margin-bottom: 14px;
+}
+.followers-empty h3 {
+    font-family: 'Syne', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 6px;
+}
+.followers-empty p { font-size: 0.875rem; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+    .followers-page { padding: 16px 12px; }
+    .followers-card { border-radius: var(--radius-lg); }
+}
+</style>
+
+<div class="followers-page">
+    <div class="followers-card">
+
+        <!-- Header -->
+        <div class="followers-header">
+            <a href="{% url 'profile' %}" class="followers-back">
+                <span class="material-icons">arrow_back</span>
+            </a>
+            <h2 class="followers-title">Followers</h2>
+        </div>
+
+        <!-- Search -->
+        <div class="followers-search-wrap">
+            <span class="material-icons followers-search-icon">search</span>
+            <input type="text"
+                   class="followers-search"
+                   placeholder="Search followers…"
+                   id="followerSearch">
+        </div>
+
+        <!-- List -->
+        <div class="followers-list" id="followerList">
+
+            {% for person in following_users %}
+
+            <div class="follower-row">
+
+                <!-- Profile -->
+                <a href="{% url 'profile' %}" class="follower-profile">
+                    <div class="follower-avatar-ring">
+                        <img src="{{ person.following.profile_pic.url }}"
+                             alt="{{ person.following.username }}">
+                    </div>
+                    <div class="follower-info">
+                        <span class="follower-username">{{ person.following.username }}</span>
+                        <span class="follower-name">{{ person.following.name }}</span>
+                    </div>
+                </a>
+
+                <!-- Actions -->
+                <div class="follower-actions">
+
+                    {% if person.following.id in following_ids %}
+                    <a href="{% url 'remove_follower' pk=person.following.id %}"
+                       class="btn-remove">
+                        Remove
+                    </a>
+                    {% endif %}
+
+                    <a href="{% url 'follow_back' pk=person.following.id %}"
+                       class="btn-follow-back {% if person.following.id in follower_ids %}btn-unfollow{% endif %}">
+                        {% if person.following.id not in follower_ids %}
+                            Follow Back
+                        {% else %}
+                            Unfollow
+                        {% endif %}
+                    </a>
+
+                </div>
+
+            </div>
+
+            {% empty %}
+
+            <div class="followers-empty">
+                <span class="material-icons">person_off</span>
+                <h3>No followers yet</h3>
+                <p>When people follow you, they'll show up here.</p>
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // Live search filter
+    const searchInput  = document.getElementById('followerSearch');
+    const followerList = document.getElementById('followerList');
+
+    searchInput.addEventListener('input', function () {
+        const query = this.value.toLowerCase();
+        const rows  = followerList.querySelectorAll('.follower-row');
+        rows.forEach(row => {
+            const name = row.querySelector('.follower-username').textContent.toLowerCase();
+            row.style.display = name.includes(query) ? '' : 'none';
+        });
+    });
+</script>
+
+{% endblock %}

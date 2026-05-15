@@ -1,0 +1,191 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Messages — Chillr{% endblock %}
+
+{% block extra_css %}
+{% endblock %}
+
+{% block content %}
+<div class="chat-shell">
+
+    <!-- ════════════════════════════
+         Conversations Sidebar
+    ════════════════════════════ -->
+    <div class="chat-sidebar">
+
+        <div class="chat-sidebar-header">
+            <div class="chat-sidebar-title">Messages</div>
+            <div class="chat-search-wrap">
+                <span class="material-icons">search</span>
+                <input
+                    type="text"
+                    class="chat-search-input"
+                    id="userSearch"
+                    placeholder="Search conversations…"
+                    autocomplete="off"
+                >
+            </div>
+        </div>
+
+        <div class="chat-user-list" id="userList">
+            {% for user in following_users %}
+            <a href="{% url 'chat_screen' pk=user.id %}"
+               class="chat-user-item {% if receiver and receiver.id == user.id %}active{% endif %}"
+               data-name="{{ user.username|lower }}">
+                <div class="chat-user-avatar-wrap">
+                    <img src="{{ user.profile_pic.url }}" alt="{{ user.username }}" class="chat-user-avatar">
+                    <span class="online-dot"></span>
+                </div>
+                <div class="chat-user-meta">
+                    <span class="chat-user-name">{{ user.username }}</span>
+                    <span class="chat-user-sub">{{ user.name|default:"Tap to chat" }}</span>
+                </div>
+            </a>
+            {% empty %}
+            <div style="padding:24px 18px;font-size:0.84rem;color:var(--text-muted);text-align:center;">
+                Follow people to start messaging
+            </div>
+            {% endfor %}
+        </div>
+
+    </div>
+
+    <!-- ════════════════════════════
+         Chat Main
+    ════════════════════════════ -->
+    {% if receiver %}
+    <div class="chat-main">
+
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="chat-header-avatar-wrap">
+                <img src="{{ receiver.profile_pic.url }}" alt="{{ receiver.username }}" class="chat-header-avatar">
+                <span class="online-dot" style="bottom:0;right:0;border-color:rgba(8,11,20,0.8);"></span>
+            </div>
+            <div class="chat-header-info">
+                <span class="chat-header-name">{{ receiver.username }}</span>
+                <span class="chat-header-status">Active now</span>
+            </div>
+            <div class="chat-header-actions">
+                <div class="chat-action-btn">
+                    <span class="material-icons">videocam</span>
+                </div>
+                <div class="chat-action-btn">
+                    <span class="material-icons">call</span>
+                </div>
+                <div class="chat-action-btn">
+                    <span class="material-icons">info_outline</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        {% if messages %}
+        <div class="chat-messages" id="chatMessages">
+            <div class="msg-date-sep">Today</div>
+            {% for message in messages %}
+                {% if message.sender_id == sender %}
+                <div class="msg-bubble msg-sent">{{ message.text_message }}</div>
+                {% else %}
+                <div class="msg-bubble msg-received">{{ message.text_message }}</div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        {% else %}
+        <!-- No messages yet -->
+        <div class="chat-empty-state">
+            <div class="chat-empty-icon">
+                <span class="material-icons">chat_bubble_outline</span>
+            </div>
+            <div class="chat-empty-title">No messages yet</div>
+            <p class="chat-empty-sub">Say hi to <strong style="color:var(--accent);">{{ receiver.username }}</strong> and start the conversation!</p>
+        </div>
+        {% endif %}
+
+        <!-- Input bar -->
+        <div class="chat-input-bar">
+            <form class="chat-input-form" action="{% url 'send_message' pk=receiver.id %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="chat-input-extra">
+                    <label class="chat-extra-btn">
+                        <span class="material-icons">add_photo_alternate</span>
+                        <input type="file" name="media" hidden>
+                    </label>
+                </div>
+                <div class="chat-input-wrap">
+                    <button type="button" class="chat-emoji-btn">
+                        <span class="material-icons">sentiment_satisfied_alt</span>
+                    </button>
+                    <input
+                        type="text"
+                        name="message_text"
+                        class="chat-text-input"
+                        id="msgInput"
+                        placeholder="Message {{ receiver.username }}…"
+                        autocomplete="off"
+                    >
+                </div>
+                <button type="submit" class="chat-send-btn" id="sendBtn">
+                    <span class="material-icons">send</span>
+                </button>
+            </form>
+        </div>
+
+    </div><!-- /chat-main -->
+
+    {% else %}
+    <!-- No conversation selected -->
+    <div class="chat-no-convo">
+        <div class="chat-no-convo-icon">
+            <span class="material-icons">forum</span>
+        </div>
+        <h3>Your Messages</h3>
+        <p>Pick a conversation from the list to start chatting</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    /* ── Auto-scroll to bottom on load ── */
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    /* ── User search filter ── */
+    const userSearch = document.getElementById('userSearch');
+    const userItems  = document.querySelectorAll('.chat-user-item');
+
+    if (userSearch) {
+        userSearch.addEventListener('input', () => {
+            const q = userSearch.value.toLowerCase();
+            userItems.forEach(item => {
+                const name = item.dataset.name || '';
+                item.style.display = name.includes(q) ? '' : 'none';
+            });
+        });
+    }
+
+    /* ── Send button: disable when empty ── */
+    const msgInput = document.getElementById('msgInput');
+    const sendBtn  = document.getElementById('sendBtn');
+    if (msgInput && sendBtn) {
+        const toggle = () => { sendBtn.style.opacity = msgInput.value.trim() ? '1' : '0.4'; };
+        toggle();
+        msgInput.addEventListener('input', toggle);
+        msgInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if (msgInput.value.trim()) sendBtn.closest('form').submit();
+            }
+        });
+    }
+})();
+</script>
+{% endblock %}

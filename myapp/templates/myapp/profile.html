@@ -1,0 +1,516 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}{{ uid.username }} - Chillr{% endblock %}
+
+{% block content %}
+
+<style>
+/* ══════════════════════════════════════
+   Profile — scoped styles
+══════════════════════════════════════ */
+
+.profile-page {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.profile-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 36px 24px 60px;
+}
+
+/* ══ Profile Header ══ */
+.profile-header {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+}
+
+/* ── Avatar ── */
+.profile-avatar-wrap {
+    flex-shrink: 0;
+}
+.profile-avatar-ring {
+    width: 140px; height: 140px;
+    border-radius: var(--radius-full);
+    padding: 3px;
+    background: linear-gradient(135deg, var(--accent) 0%, #f97316 50%, var(--indigo) 100%);
+}
+.profile-avatar-inner {
+    width: 100%; height: 100%;
+    border-radius: var(--radius-full);
+    padding: 3px;
+    background: var(--bg-deep);
+}
+.profile-avatar-inner img {
+    width: 100%; height: 100%;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    display: block;
+}
+
+/* ── Info ── */
+.profile-info { flex: 1; min-width: 0; }
+
+.profile-top-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+.profile-username {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+.profile-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+.btn-profile-edit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border-radius: var(--radius-md);
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    font-weight: 600;
+    font-size: 0.875rem;
+    text-decoration: none;
+    transition: all var(--transition);
+}
+.btn-profile-edit:hover { border-color: var(--border-hover); background: rgba(255,255,255,0.08); }
+
+.btn-profile-settings {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px; height: 36px;
+    border-radius: var(--radius-md);
+    background: var(--bg-hover);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all var(--transition);
+}
+.btn-profile-settings:hover { color: var(--text-main); border-color: var(--border-hover); }
+.btn-profile-settings .material-icons { font-size: 18px; }
+
+/* Stats row */
+.profile-stats {
+    display: flex;
+    gap: 28px;
+    margin-bottom: 18px;
+}
+.profile-stat {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: color var(--transition);
+    cursor: pointer;
+}
+.profile-stat:hover { color: var(--text-main); }
+.profile-stat-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-main);
+}
+
+/* Bio */
+.profile-bio { max-width: 420px; }
+.profile-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--text-main);
+    margin-bottom: 3px;
+}
+.profile-bio-text {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.55;
+    margin-bottom: 3px;
+}
+.profile-description {
+    font-size: 0.875rem;
+    color: var(--text-main);
+    line-height: 1.55;
+    margin-bottom: 5px;
+    word-break: break-word;
+}
+.profile-website {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--cyan);
+    text-decoration: none;
+    transition: opacity var(--transition);
+}
+.profile-website:hover { opacity: 0.75; }
+
+/* ══ Mobile stats bar ══ */
+.profile-stats-mobile {
+    display: none;
+    justify-content: space-around;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 20px;
+}
+.profile-stat-mobile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+.profile-stat-mobile-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-main);
+}
+.profile-stat-mobile-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ══ Story Highlights ══ */
+.highlights-row {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 24px;
+    margin-bottom: 8px;
+}
+.highlights-row::-webkit-scrollbar { height: 0; }
+
+.highlight-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    flex-shrink: 0;
+    text-decoration: none;
+}
+.highlight-item:hover .highlight-ring { border-color: var(--border-hover); }
+
+.highlight-ring {
+    width: 66px; height: 66px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--border);
+    padding: 3px;
+    background: var(--bg-raised);
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color var(--transition);
+}
+.highlight-ring img {
+    width: 100%; height: 100%;
+    border-radius: var(--radius-full);
+    object-fit: cover;
+    display: block;
+}
+.highlight-ring-new {
+    width: 100%; height: 100%;
+    border-radius: var(--radius-full);
+    background: var(--accent-dim);
+    display: flex; align-items: center; justify-content: center;
+}
+.highlight-ring-new .material-icons { font-size: 26px; color: var(--accent); }
+
+.highlight-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-align: center;
+    max-width: 66px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.highlight-label.new { color: var(--text-main); }
+
+/* ══ Tabs ══ */
+.profile-tabs {
+    display: flex;
+    justify-content: center;
+    border-top: 1px solid var(--border);
+    gap: 40px;
+    margin-bottom: 20px;
+}
+.profile-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 14px 4px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    border-top: 2px solid transparent;
+    margin-top: -1px;
+    cursor: pointer;
+    transition: color var(--transition), border-color var(--transition);
+}
+.profile-tab:hover { color: var(--text-main); }
+.profile-tab.active {
+    color: var(--text-main);
+    border-top-color: var(--text-main);
+}
+.profile-tab .material-icons { font-size: 17px; }
+
+/* ══ Posts Grid ══ */
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+}
+
+.profile-grid-item {
+    position: relative;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    background: var(--bg-raised);
+    cursor: pointer;
+}
+.profile-grid-item img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform var(--transition-slow), filter var(--transition-slow);
+}
+.profile-grid-item:hover img {
+    transform: scale(1.04);
+    filter: brightness(0.72);
+}
+/* hover overlay */
+.profile-grid-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    opacity: 0;
+    transition: opacity var(--transition);
+}
+.profile-grid-item:hover .profile-grid-overlay { opacity: 1; }
+.profile-grid-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+.profile-grid-stat .material-icons { font-size: 20px; }
+
+/* Empty grid state */
+.profile-grid-empty {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 20px;
+    color: var(--text-muted);
+    gap: 10px;
+}
+.profile-grid-empty .material-icons {
+    font-size: 52px;
+    opacity: 0.2;
+}
+.profile-grid-empty p {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-main);
+}
+.profile-grid-empty span { font-size: 0.875rem; }
+
+/* ══ Responsive ══ */
+@media (max-width: 768px) {
+    .profile-header { flex-direction: column; align-items: center; gap: 20px; text-align: center; }
+    .profile-avatar-ring { width: 100px; height: 100px; }
+    .profile-top-row { justify-content: center; }
+    .profile-stats { display: none; }
+    .profile-stats-mobile { display: flex; }
+    .profile-bio { max-width: 100%; }
+    .profile-actions { justify-content: center; }
+    .btn-profile-settings { display: none; }
+    .profile-inner { padding: 20px 12px 60px; }
+    .profile-tabs { gap: 24px; }
+}
+</style>
+
+<!-- Mobile header -->
+<header class="mobile-header">
+    <div style="display:flex;align-items:center;gap:6px;">
+        <span class="mobile-header-brand">{{ uid.username }}</span>
+        <span class="material-icons" style="font-size:18px;color:var(--text-muted);">keyboard_arrow_down</span>
+    </div>
+    <div class="mobile-header-actions">
+        <a href="{% url 'create-post' %}">
+            <span class="material-icons">add_box</span>
+        </a>
+        <span class="material-icons">menu</span>
+    </div>
+</header>
+
+<div class="profile-page">
+    <div class="profile-inner">
+
+        <!-- ══ Profile Header ══ -->
+        <div class="profile-header">
+
+            <!-- Avatar -->
+            <div class="profile-avatar-wrap">
+                <div class="profile-avatar-ring">
+                    <div class="profile-avatar-inner">
+                        <img src="{{ uid.profile_pic.url }}" alt="{{ uid.username }}">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="profile-info">
+
+                <div class="profile-top-row">
+                    <span class="profile-username">{{ uid.username }}</span>
+                    <div class="profile-actions">
+                        <a href="{% url 'edit-profile' %}" class="btn-profile-edit">
+                            Edit Profile
+                        </a>
+                        <button class="btn-profile-edit">View Archive</button>
+                        <a href="{% url 'edit-profile' %}" class="btn-profile-settings">
+                            <span class="material-icons">settings</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Stats (desktop) -->
+                <div class="profile-stats">
+                    <span class="profile-stat">
+                        <span class="profile-stat-num">{{ post_count }}</span> posts
+                    </span>
+                    <a href="{% url 'followers' %}" class="profile-stat">
+                        <span class="profile-stat-num">{{ followers_count }}</span> followers
+                    </a>
+                    <a href="{% url 'following' %}" class="profile-stat">
+                        <span class="profile-stat-num">{{ following_count }}</span> following
+                    </a>
+                </div>
+
+                <!-- Bio -->
+                <div class="profile-bio">
+                    <p class="profile-name">{{ uid.name }}</p>
+                    <p class="profile-bio-text">{{ uid.bio }}</p>
+                    <p class="profile-description">{{ uid.description }}</p>
+                    {% if uid.website %}
+                    <a href="{{ uid.website }}" class="profile-website" target="_blank">{{ uid.website }}</a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Stats (mobile) -->
+        <div class="profile-stats-mobile">
+            <div class="profile-stat-mobile">
+                <span class="profile-stat-mobile-num">{{ post_count }}</span>
+                <span class="profile-stat-mobile-label">Posts</span>
+            </div>
+            <a href="{% url 'followers' %}" class="profile-stat-mobile" style="text-decoration:none;">
+                <span class="profile-stat-mobile-num">{{ followers_count }}</span>
+                <span class="profile-stat-mobile-label">Followers</span>
+            </a>
+            <a href="{% url 'following' %}" class="profile-stat-mobile" style="text-decoration:none;">
+                <span class="profile-stat-mobile-num">{{ following_count }}</span>
+                <span class="profile-stat-mobile-label">Following</span>
+            </a>
+        </div>
+
+        <!-- ══ Story Highlights ══ -->
+        <div class="highlights-row">
+
+            <!-- Add new -->
+            <a href="{% url 'create-post' %}" class="highlight-item">
+                <div class="highlight-ring">
+                    <div class="highlight-ring-new">
+                        <span class="material-icons">add</span>
+                    </div>
+                </div>
+                <span class="highlight-label new">New</span>
+            </a>
+
+            {% for story in story_highlights %}
+            <div class="highlight-item">
+                <div class="highlight-ring">
+                    <img src="{{ story.image.url }}" alt="{{ story.title }}">
+                </div>
+                <span class="highlight-label">{{ story.title }}</span>
+            </div>
+            {% endfor %}
+
+        </div>
+
+        <!-- ══ Tabs ══ -->
+        <div class="profile-tabs">
+            <div class="profile-tab active">
+                <span class="material-icons">grid_on</span>
+                <span>Posts</span>
+            </div>
+            <div class="profile-tab">
+                <span class="material-icons">bookmark_border</span>
+                <span>Saved</span>
+            </div>
+            <div class="profile-tab">
+                <span class="material-icons">assignment_ind</span>
+                <span>Tagged</span>
+            </div>
+        </div>
+
+        <!-- ══ Posts Grid ══ -->
+        <div class="profile-grid">
+
+            {% for post in user_posts %}
+            <div class="profile-grid-item">
+                <img src="{{ post.image.url }}" alt="Post">
+                <div class="profile-grid-overlay">
+                    <span class="profile-grid-stat">
+                        <span class="material-icons">favorite</span>
+                        {{ post.likes_count|default:"0" }}
+                    </span>
+                    <span class="profile-grid-stat">
+                        <span class="material-icons">chat_bubble</span>
+                        {{ post.comments_count|default:"0" }}
+                    </span>
+                </div>
+            </div>
+
+            {% empty %}
+            <div class="profile-grid-empty">
+                <span class="material-icons">camera_alt</span>
+                <p>No posts yet</p>
+                <span>When you share photos, they'll appear here.</span>
+            </div>
+            {% endfor %}
+
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}

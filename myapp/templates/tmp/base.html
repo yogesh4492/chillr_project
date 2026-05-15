@@ -1,0 +1,121 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Chillr{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'myapp/css/style.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+<div class="chillr-layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-icon">🔥</div>
+      <span class="sidebar-logo-text">Chillr</span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="{% url 'home' %}" class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+        <span class="material-icons nav-icon">home</span> Home
+      </a>
+      <a href="#" class="nav-link">
+        <span class="material-icons nav-icon">search</span> Search
+      </a>
+      <a href="#" class="nav-link">
+        <span class="material-icons nav-icon">explore</span> Explore
+      </a>
+      <a href="#" class="nav-link">
+        <span class="material-icons nav-icon">chat_bubble_outline</span> Messages
+      </a>
+      <a href="#" class="nav-link">
+        <span class="material-icons nav-icon">favorite_border</span> Notifications
+      </a>
+
+      <div class="nav-section-label">Create</div>
+
+      <a href="{% url 'create-post' %}" class="nav-link {% if request.resolver_match.url_name == 'create-post' %}active{% endif %}">
+        <span class="material-icons nav-icon">add_box</span> New Post
+      </a>
+      <a href="#" class="nav-link">
+        <span class="material-icons nav-icon">add_circle_outline</span> Story
+      </a>
+
+      <div class="nav-section-label">Account</div>
+
+      <a href="{% url 'profile' %}" class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+        <span class="material-icons nav-icon">person_outline</span> Profile
+      </a>
+      <a href="{% url 'edit-profile' %}" class="nav-link {% if request.resolver_match.url_name == 'edit-profile' %}active{% endif %}">
+        <span class="material-icons nav-icon">settings</span> Settings
+      </a>
+      <a href="{% url 'logout' %}" class="nav-link logout">
+        <span class="material-icons nav-icon">logout</span> Logout
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="{% url 'profile' %}" class="sidebar-user">
+        {% if uid.profile_pic %}<img src="{{ uid.profile_pic.url }}" class="sidebar-user-avatar" alt="">{% endif %}
+        <div>
+          <div class="sidebar-user-name">{{ uid.username }}</div>
+          <div class="sidebar-user-handle">View profile</div>
+        </div>
+      </a>
+    </div>
+  </aside>
+
+  <!-- TOPBAR (mobile) -->
+  <header class="topbar">
+    <span class="sidebar-logo-text" style="font-family:'Syne',sans-serif;font-size:20px;font-weight:800;background:linear-gradient(135deg,#FF5524,#FF9240);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Chillr</span>
+    <div style="display:flex;gap:16px;">
+      <button class="btn-icon" style="border:none;background:none;"><span class="material-icons" style="color:var(--text-2);">favorite_border</span></button>
+      <button class="btn-icon" style="border:none;background:none;"><span class="material-icons" style="color:var(--text-2);">chat_bubble_outline</span></button>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+</div>
+
+<script>
+  // Post menu toggle
+  document.querySelectorAll('.post-more-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const menu = btn.closest('.post-menu');
+      document.querySelectorAll('.post-menu.open').forEach(m => { if(m !== menu) m.classList.remove('open'); });
+      menu.classList.toggle('open');
+    });
+  });
+  document.addEventListener('click', () => document.querySelectorAll('.post-menu.open').forEach(m => m.classList.remove('open')));
+
+  // Like button toggle
+  document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.classList.toggle('liked');
+      const icon = btn.querySelector('.material-icons');
+      icon.textContent = btn.classList.contains('liked') ? 'favorite' : 'favorite_border';
+    });
+  });
+
+  // Bookmark toggle
+  document.querySelectorAll('.bookmark-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const icon = btn.querySelector('.material-icons');
+      icon.textContent = icon.textContent.trim() === 'bookmark_border' ? 'bookmark' : 'bookmark_border';
+    });
+  });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

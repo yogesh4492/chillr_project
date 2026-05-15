@@ -1,0 +1,228 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Chillr{% endblock %}</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Master stylesheet -->
+    <link rel="stylesheet" href="{% static 'myapp/css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'myapp/css/create_post.css' %}">
+    <link rel="stylesheet" href="{% static 'myapp/css/chat.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ── Animated blob background ── -->
+<div class="blobs" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+</div>
+
+<!-- ── App shell ── -->
+<div class="app-shell">
+
+    <!-- ══════════════════════════════════
+         LEFT SIDEBAR
+    ══════════════════════════════════ -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-top">
+
+            <!-- Brand -->
+            <a href="{% url 'home' %}" class="sidebar-brand">
+                <div class="sidebar-brand-logo">✦</div>
+                <span class="sidebar-brand-name">Chillr</span>
+            </a>
+
+            <!-- Main nav -->
+            <nav class="sidebar-nav">
+
+                <a href="{% url 'home' %}"
+                   class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <span class="material-icons">home</span>
+                    Home
+                </a>
+
+                <a href="#"
+                   class="nav-item {% if request.resolver_match.url_name == 'explore' %}active{% endif %}">
+                    <span class="material-icons">search</span>
+                    Search
+                </a>
+
+                <a href="{% url 'reels' %}"
+                   class="nav-item {% if request.resolver_match.url_name == 'reels' %}active{% endif %}">
+                    <span class="material-icons">explore</span>
+                    Explore
+                </a>
+
+                <a href="{% url 'chat_screen' %}"
+                   class="nav-item {% if request.resolver_match.url_name == 'chat_screen' %}active{% endif %}">
+                    <span class="material-icons">chat_bubble_outline</span>
+                    Messages
+                </a>
+
+                <a href="{% url 'notifications' %}"
+                   class="nav-item {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}">
+                    <span class="material-icons">favorite_border</span>
+                    Notifications
+                </a>
+
+                <div class="nav-divider"></div>
+                <div class="nav-section-label">Create</div>
+
+                <a href="{% url 'create-post' %}"
+                   class="nav-item {% if request.resolver_match.url_name == 'create-post' %}active{% endif %}">
+                    <span class="material-icons">add_box</span>
+                    New Post
+                </a>
+
+                <a href="{% url 'create_reels' %}"
+                   class="nav-item {% if request.resolver_match.url_name == 'create_reels' %}active{% endif %}">
+                    <span class="material-icons">video_library</span>
+                    New Reel
+                </a>
+
+                <a href="{% url 'create_story' %}"
+                   class="nav-item {% if request.resolver_match.url_name == 'create_story' %}active{% endif %}">
+                    <span class="material-icons">auto_stories</span>
+                    New Story
+                </a>
+
+                <div class="nav-divider"></div>
+                <div class="nav-section-label">Social</div>
+
+                <a href="{% url 'followers' %}"
+                   class="nav-item {% if request.resolver_match.url_name == 'followers' %}active{% endif %}">
+                    <span class="material-icons">people_outline</span>
+                    Followers
+                </a>
+
+                <a href="{% url 'following' %}"
+                   class="nav-item {% if request.resolver_match.url_name == 'following' %}active{% endif %}">
+                    <span class="material-icons">person_add_alt</span>
+                    Following
+                </a>
+
+                <div class="nav-divider"></div>
+                <div class="nav-section-label">Account</div>
+
+                <a href="{% url 'profile' %}"
+                   class="nav-item {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                    <img src="{{ uid.profile_pic.url }}" alt="" class="nav-avatar">
+                    Profile
+                </a>
+
+                <a href="{% url 'edit-profile' %}"
+                   class="nav-item {% if request.resolver_match.url_name == 'edit-profile' %}active{% endif %}">
+                    <span class="material-icons">settings</span>
+                    Edit Profile
+                </a>
+
+                <a href="{% url 'logout' %}" class="nav-item danger">
+                    <span class="material-icons">logout</span>
+                    Logout
+                </a>
+
+            </nav>
+        </div>
+
+        <!-- Sidebar bottom user card -->
+        <div class="sidebar-user">
+            <a href="{% url 'profile' %}" class="sidebar-user-card" style="text-decoration:none;">
+                <img src="{{ uid.profile_pic.url }}" alt="" class="sidebar-user-avatar">
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name">{{ uid.username }}</div>
+                    <div class="sidebar-user-email">{{ uid.email }}</div>
+                </div>
+                <span class="material-icons sidebar-user-more" style="font-size:18px;">more_horiz</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- ══════════════════════════════════
+         MAIN WRAPPER
+    ══════════════════════════════════ -->
+    <div class="main-wrapper">
+
+        <!-- Mobile top header -->
+        <header class="mobile-header" id="mobile-header">
+            <button id="sidebar-toggle" style="background:none;border:none;color:var(--text-muted);cursor:pointer;">
+                <span class="material-icons" style="font-size:24px;">menu</span>
+            </button>
+            <span class="mobile-header-brand">Chillr</span>
+            <div class="mobile-header-actions">
+                <span class="material-icons">favorite_border</span>
+                <span class="material-icons">chat_bubble_outline</span>
+            </div>
+        </header>
+
+        <!-- Page content -->
+        {% block content %}{% endblock %}
+
+    </div><!-- /main-wrapper -->
+
+</div><!-- /app-shell -->
+
+<!-- Sidebar overlay for mobile -->
+<div id="sidebar-overlay" style="
+    display:none; position:fixed; inset:0; z-index:90;
+    background:rgba(0,0,0,0.6); backdrop-filter:blur(2px);
+"></div>
+
+<!-- Scripts -->
+<script src="{% static 'myapp/js/script.js' %}"></script>
+<script>
+(function () {
+    /* ── Mobile sidebar toggle ── */
+    const sidebar  = document.getElementById('sidebar');
+    const overlay  = document.getElementById('sidebar-overlay');
+    const toggleBtn = document.getElementById('sidebar-toggle');
+
+    function openSidebar()  { sidebar.classList.add('open');  overlay.style.display = 'block'; }
+    function closeSidebar() { sidebar.classList.remove('open'); overlay.style.display = 'none'; }
+
+    if (toggleBtn) toggleBtn.addEventListener('click', openSidebar);
+    overlay.addEventListener('click', closeSidebar);
+
+    /* ── Post menu dropdowns ── */
+    document.addEventListener('click', function (e) {
+        const menuBtn = e.target.closest('.menu-btn');
+        if (menuBtn) {
+            const dropdown = menuBtn.closest('.post-menu').querySelector('.menu-dropdown');
+            document.querySelectorAll('.menu-dropdown.show').forEach(d => { if (d !== dropdown) d.classList.remove('show'); });
+            dropdown && dropdown.classList.toggle('show');
+            return;
+        }
+        document.querySelectorAll('.menu-dropdown.show').forEach(d => d.classList.remove('show'));
+    });
+
+    /* ── Comment post button state ── */
+    document.querySelectorAll('.comment-input').forEach(input => {
+        const btn = input.closest('.post-comment-bar')?.querySelector('.comment-post-btn');
+        if (!btn) return;
+        btn.style.opacity = '0.35';
+        input.addEventListener('input', () => { btn.style.opacity = input.value.trim() ? '1' : '0.35'; });
+    });
+
+    /* ── Expand comments ── */
+    document.querySelectorAll('.view-comments').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const list = btn.closest('.post-comments-wrap')?.querySelector('.comments-list');
+            if (!list) return;
+            const hidden = list.classList.toggle('hidden');
+            btn.textContent = hidden ? 'View all comments' : 'Hide comments';
+        });
+    });
+})();
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

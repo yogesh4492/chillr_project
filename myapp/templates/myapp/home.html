@@ -1,0 +1,194 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Home — Chillr{% endblock %}
+
+{% block content %}
+
+<!-- ══════════════════════════════════
+     HOME FEED
+══════════════════════════════════ -->
+<main
+    style="flex:1; overflow-y:auto; padding: 32px 24px; display:flex; gap:32px; max-width:1100px; margin:0 auto; width:100%;">
+
+    <!-- ── Feed column ── -->
+    <div style="flex:1; min-width:0; max-width:614px;">
+
+        <!-- ════════════════════
+             Stories Strip
+        ════════════════════ -->
+        <div class="stories-wrap">
+            <div class="stories-row">
+
+                <!-- Your Story -->
+                <a href="{% url 'create_story' %}" class="story-item" style="text-decoration:none;">
+                    <div class="story-own-ring">
+                        <img src="{{ uid.profile_pic.url }}" alt="{{ uid.username }}">
+                        <div class="story-add-badge">+</div>
+                    </div>
+                    <span class="story-label own">Your Story</span>
+                </a>
+
+                <!-- Other Stories -->
+                {% for story in story_all %}
+                <a href="{% url 'story_viewer' user_id=story.user.id %}" class="story-item"
+                    style="text-decoration:none;">
+                    <div class="story-ring">
+                        <img src="{{ story.user.profile_pic.url }}" alt="{{ story.user.username }}">
+                    </div>
+                    <span class="story-label">{{ story.user.username }}</span>
+                </a>
+                {% endfor %}
+
+            </div>
+        </div>
+
+        <!-- ════════════════════
+             Posts Feed
+        ════════════════════ -->
+        {% for post in post_all %}
+        <article class="post-card">
+
+            <!-- Header -->
+            <div class="post-header">
+                <div class="post-user">
+                    <div class="post-avatar-wrap">
+                        <img src="{{ post.user.profile_pic.url }}" alt="{{ post.user.username }}">
+                    </div>
+                    <div>
+                        <a href="#" class="post-username" style="text-decoration:none;">{{ post.user.username }}</a>
+                        <span class="post-location">{{ post.location|default:"" }}</span>
+                    </div>
+                </div>
+
+                <div class="post-menu">
+                    <span class="material-icons menu-btn">more_horiz</span>
+                    <div class="menu-dropdown">
+                        <button class="edit-btn">
+                            <span class="material-icons"
+                                style="font-size:15px;vertical-align:middle;margin-right:6px;">edit</span>Edit
+                        </button>
+                        <button class="delete-btn">
+                            <span class="material-icons"
+                                style="font-size:15px;vertical-align:middle;margin-right:6px;">delete_outline</span>Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image -->
+            <div class="post-image-wrap">
+                <img src="{{ post.image.url }}" alt="Post by {{ post.user.username }}">
+            </div>
+
+            <!-- Actions -->
+            <div class="post-actions">
+                <div class="post-action-group">
+                    <a href="{% url 'like_unlike' pk=post.id %}" class="action-btn like-btn">
+                        <span class="material-icons">favorite_border</span>
+                    </a>
+                    <button class="action-btn">
+                        <span class="material-icons">chat_bubble_outline</span>
+                    </button>
+                    <button class="action-btn">
+                        <span class="material-icons">send</span>
+                    </button>
+                </div>
+                <button class="action-btn action-btn-save">
+                    <span class="material-icons">bookmark_border</span>
+                </button>
+            </div>
+
+            <!-- Meta -->
+            <div class="post-meta">
+                <div class="post-likes">{{ post.liked_post.count }} likes</div>
+                <p class="post-caption">
+                    <a href="#" class="cap-user" style="text-decoration:none;">{{ post.user.username }}</a>
+                    {{ post.caption }}
+                </p>
+                <div class="post-comments-wrap">
+                    <button class="view-comments">View all comments</button>
+                    <div class="comments-list hidden"
+                        style="margin-top:6px; font-size:0.83rem; display:flex; flex-direction:column; gap:4px; color:var(--text-muted);">
+                        <!-- Comments would be rendered here -->
+                    </div>
+                </div>
+                <div class="post-timestamp" style="margin-top:8px;">{{ post.whenpublished }}</div>
+            </div>
+
+            <!-- Add Comment -->
+            <div class="post-comment-bar">
+                <span class="material-icons"
+                    style="color:var(--text-muted);font-size:20px;">sentiment_satisfied_alt</span>
+                <form class="comment-form" style="flex:1;display:flex;align-items:center;gap:10px;">
+                    <input type="text" class="comment-input" placeholder="Add a comment…" autocomplete="off">
+                    <button type="submit" class="comment-post-btn">Post</button>
+                </form>
+            </div>
+
+        </article>
+        {% empty %}
+        <!-- Empty state -->
+        <div style="
+            text-align:center; padding:60px 20px;
+            background:var(--bg-surface); border:1px solid var(--border);
+            border-radius:var(--radius-xl); color:var(--text-muted);
+        ">
+            <span class="material-icons"
+                style="font-size:48px;margin-bottom:16px;display:block;opacity:0.3;">photo_library</span>
+            <p
+                style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:600;color:var(--text-main);margin-bottom:8px;">
+                No posts yet</p>
+            <p style="font-size:0.875rem;">Follow people or create your first post to see the feed.</p>
+            <a href="{% url 'create-post' %}" class="btn btn-accent"
+                style="display:inline-flex;margin-top:20px;text-decoration:none;">
+                <span class="material-icons" style="font-size:16px;">add</span> Create Post
+            </a>
+        </div>
+        {% endfor %}
+
+    </div>
+    <!-- /feed column -->
+
+
+    <!-- ── Right Sidebar ── -->
+    <aside class="right-sidebar">
+
+        <!-- My profile card -->
+        <div class="rs-user-card">
+            <img src="{{ uid.profile_pic.url }}" alt="{{ uid.username }}" class="rs-avatar">
+            <div class="rs-user-info">
+                <div class="rs-username">{{ uid.username }}</div>
+                <div class="rs-email">{{ uid.email }}</div>
+            </div>
+            <a href="{% url 'logout' %}" class="rs-switch" style="text-decoration:none;">Switch</a>
+        </div>
+
+        <!-- Following users -->
+        <div class="rs-section-head">
+            <span class="rs-section-title">Following</span>
+            <a href="{% url 'following' %}" class="rs-see-all" style="text-decoration:none;">See all</a>
+        </div>
+
+        <div class="rs-following-list">
+            {% for u in all_user %}
+            <div class="rs-follow-item">
+                <img src="{{ u.profile_pic.url }}" alt="{{ u.username }}" class="rs-follow-avatar">
+                <span class="rs-follow-name">{{ u.username }}</span>
+            </div>
+            {% empty %}
+            <p style="font-size:0.82rem;color:var(--text-muted);">You're not following anyone yet.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Footer -->
+        <div class="rs-footer">
+            <p>About &middot; Help &middot; Privacy &middot; Terms &middot; Locations &middot; Language</p>
+            <p>&copy; 2025 Chillr &mdash; All rights reserved</p>
+        </div>
+
+    </aside>
+
+</main>
+
+{% endblock %}

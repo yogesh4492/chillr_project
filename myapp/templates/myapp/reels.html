@@ -1,0 +1,305 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Explore Reels — Chillr{% endblock %}
+
+{% block extra_css %}
+
+{% endblock %}
+
+{% block content %}
+<main class="reels-page">
+
+    <!-- ════════════════════════════
+         Reels Feed
+    ════════════════════════════ -->
+    <div class="reels-feed">
+
+        <!-- Heading + tabs -->
+        <div class="reels-heading">
+            <div class="reels-heading-title">
+                <span class="material-icons">explore</span>
+                Explore Reels
+            </div>
+            <div class="reel-tab-row">
+                <button class="reel-tab active">All</button>
+                <button class="reel-tab">Following</button>
+                <button class="reel-tab">Trending</button>
+            </div>
+        </div>
+
+        <!-- Stories strip (same as home) -->
+        <div class="stories-wrap">
+            <div class="stories-row">
+                <a href="{% url 'create_story' %}" class="story-item" style="text-decoration:none;">
+                    <div class="story-own-ring">
+                        <img src="{{ uid.profile_pic.url }}" alt="{{ uid.username }}">
+                        <div class="story-add-badge">+</div>
+                    </div>
+                    <span class="story-label own">Your Story</span>
+                </a>
+                {% for story in story_all %}
+                <a href="{% url 'story_viewer' user_id=story.id %}" class="story-item" style="text-decoration:none;">
+                    <div class="story-ring">
+                        <img src="{{ story.user.profile_pic.url }}" alt="{{ story.user.username }}">
+                    </div>
+                    <span class="story-label">{{ story.user.username }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Reel Cards -->
+        {% for post in post_all %}
+        <article class="reel-card" data-reel-id="{{ post.id }}">
+
+            <!-- Header -->
+            <div class="reel-header">
+                <div class="reel-user">
+                    <div class="reel-avatar-ring">
+                        <img src="{{ post.user.profile_pic.url }}" alt="{{ post.user.username }}">
+                    </div>
+                    <div>
+                        <span class="reel-username">{{ post.user.username }}</span>
+                        <span class="reel-time">{{ post.whenpublished }}</span>
+                    </div>
+                </div>
+
+                <div class="reel-menu">
+                    <span class="material-icons reel-menu-btn">more_horiz</span>
+                    <div class="reel-dropdown">
+                        <button class="edit-btn">
+                            <span class="material-icons" style="font-size:15px;">edit</span> Edit
+                        </button>
+                        <button class="delete-btn">
+                            <span class="material-icons" style="font-size:15px;">delete_outline</span> Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Video -->
+            <div class="reel-video-wrap" data-wrap>
+                <video
+                    src="{{ post.video.url }}"
+                    class="reel-video"
+                    autoplay muted loop playsinline
+                    preload="metadata"
+                ></video>
+
+                <!-- Play/pause overlay -->
+                <div class="reel-play-overlay" data-overlay>
+                    <div class="reel-play-overlay-icon">
+                        <span class="material-icons" data-play-icon>pause</span>
+                    </div>
+                </div>
+
+                <!-- Mute toggle -->
+                <button class="reel-mute-btn" data-mute-btn type="button">
+                    <span class="material-icons" data-mute-icon>volume_off</span>
+                    <span data-mute-label>Unmute</span>
+                </button>
+            </div>
+
+            <!-- Actions -->
+            <div class="reel-actions">
+                <div class="reel-action-group">
+                    <a href="{% url 'like_unlike' pk=post.id %}" class="reel-action-btn like-btn">
+                        <span class="material-icons">favorite_border</span>
+                    </a>
+                    <button class="reel-action-btn">
+                        <span class="material-icons">chat_bubble_outline</span>
+                    </button>
+                    <button class="reel-action-btn">
+                        <span class="material-icons">send</span>
+                    </button>
+                </div>
+                <button class="reel-action-btn reel-save-btn">
+                    <span class="material-icons">bookmark_border</span>
+                </button>
+            </div>
+
+            <!-- Meta -->
+            <div class="reel-meta">
+                <div class="reel-likes">{{ post.liked_post.count }} likes</div>
+                <p class="reel-caption">
+                    <span class="cap-user">{{ post.user.username }}</span>
+                    {{ post.caption }}
+                </p>
+                <div class="reel-comments-wrap">
+                    <button class="view-reel-comments">View all comments</button>
+                    <div class="reel-comments-list" style="display:none; margin-top:6px; font-size:0.83rem; color:var(--text-muted); display:flex; flex-direction:column; gap:4px;"></div>
+                </div>
+            </div>
+
+            <!-- Comment bar -->
+            <div class="reel-comment-bar">
+                <span class="material-icons">sentiment_satisfied_alt</span>
+                <form class="comment-form" style="flex:1;display:flex;align-items:center;gap:10px;">
+                    <input type="text" class="reel-comment-input" placeholder="Add a comment…" autocomplete="off">
+                    <button type="submit" class="reel-post-btn">Post</button>
+                </form>
+            </div>
+
+        </article>
+        {% empty %}
+        <div class="reels-empty">
+            <span class="material-icons">video_library</span>
+            <h3>No reels yet</h3>
+            <p>Be the first to share a reel with the community.</p>
+            <a href="{% url 'create_reels' %}">
+                <span class="material-icons" style="font-size:16px;">add</span>
+                Create Reel
+            </a>
+        </div>
+        {% endfor %}
+
+    </div>
+    <!-- /reels-feed -->
+
+    <!-- ════════════════════════════
+         Right Sidebar
+    ════════════════════════════ -->
+    <aside class="right-sidebar">
+
+        <!-- My profile card -->
+        <div class="rs-user-card">
+            <img src="{{ uid.profile_pic.url }}" alt="{{ uid.username }}" class="rs-avatar">
+            <div class="rs-user-info">
+                <div class="rs-username">{{ uid.username }}</div>
+                <div class="rs-email">{{ uid.email }}</div>
+            </div>
+            <a href="{% url 'logout' %}" class="rs-switch">Switch</a>
+        </div>
+
+        <!-- Suggested for you -->
+        <div class="rs-section-head">
+            <span class="rs-section-title">Suggested</span>
+            <a href="#" class="rs-see-all">See all</a>
+        </div>
+
+        <div class="rs-suggest-list">
+            {% for u in all_user %}
+            <div class="rs-suggest-item">
+                <img src="{{ u.profile_pic.url }}" alt="{{ u.username }}" class="rs-suggest-avatar">
+                <div class="rs-suggest-info">
+                    <span class="rs-suggest-name">{{ u.username }}</span>
+                    <span class="rs-suggest-sub">{{ u.name|default:"Suggested for you" }}</span>
+                </div>
+                <button class="rs-follow-btn">Follow</button>
+            </div>
+            {% empty %}
+            <p style="font-size:0.82rem;color:var(--text-muted);">No suggestions right now.</p>
+            {% endfor %}
+        </div>
+
+        <div class="rs-footer">
+            <p>About &middot; Help &middot; Privacy &middot; Terms &middot; Language</p>
+            <p>&copy; 2025 Chillr &mdash; All rights reserved</p>
+        </div>
+
+    </aside>
+
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+
+    /* ══ Tab switcher ══ */
+    document.querySelectorAll('.reel-tab').forEach(tab => {
+        tab.addEventListener('click', () => {
+            document.querySelectorAll('.reel-tab').forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+        });
+    });
+
+    /* ══ Per-card: play/pause + mute toggle ══ */
+    document.querySelectorAll('.reel-card').forEach(card => {
+        const video    = card.querySelector('.reel-video');
+        const overlay  = card.querySelector('[data-overlay]');
+        const playIcon = card.querySelector('[data-play-icon]');
+        const muteBtn  = card.querySelector('[data-mute-btn]');
+        const muteIcon = card.querySelector('[data-mute-icon]');
+        const muteLabel= card.querySelector('[data-mute-label]');
+        const wrap     = card.querySelector('[data-wrap]');
+
+        if (!video) return;
+
+        /* click video → toggle play/pause */
+        wrap.addEventListener('click', e => {
+            if (e.target === muteBtn || muteBtn.contains(e.target)) return;
+            if (video.paused) {
+                video.play();
+                playIcon.textContent = 'pause';
+                flashOverlay();
+            } else {
+                video.pause();
+                playIcon.textContent = 'play_arrow';
+                flashOverlay();
+            }
+        });
+
+        function flashOverlay() {
+            overlay.classList.add('visible');
+            clearTimeout(overlay._t);
+            overlay._t = setTimeout(() => overlay.classList.remove('visible'), 600);
+        }
+
+        /* mute toggle */
+        muteBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            video.muted = !video.muted;
+            muteIcon.textContent  = video.muted ? 'volume_off' : 'volume_up';
+            muteLabel.textContent = video.muted ? 'Unmute' : 'Mute';
+        });
+    });
+
+    /* ══ Reel menu dropdowns ══ */
+    document.addEventListener('click', e => {
+        const menuBtn = e.target.closest('.reel-menu-btn');
+        if (menuBtn) {
+            const dd = menuBtn.closest('.reel-menu').querySelector('.reel-dropdown');
+            document.querySelectorAll('.reel-dropdown.show').forEach(d => { if (d !== dd) d.classList.remove('show'); });
+            dd && dd.classList.toggle('show');
+            return;
+        }
+        document.querySelectorAll('.reel-dropdown.show').forEach(d => d.classList.remove('show'));
+    });
+
+    /* ══ Intersection Observer: pause off-screen reels ══ */
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                const video = entry.target.querySelector('.reel-video');
+                if (!video) return;
+                if (entry.isIntersecting) {
+                    video.play().catch(() => {});
+                } else {
+                    video.pause();
+                }
+            });
+        }, { threshold: 0.5 });
+
+        document.querySelectorAll('.reel-card').forEach(card => observer.observe(card));
+    }
+
+    /* ══ Like button animation ══ */
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', () => btn.classList.toggle('liked'));
+    });
+
+    /* ══ Comment post btn state ══ */
+    document.querySelectorAll('.reel-comment-input').forEach(input => {
+        const btn = input.closest('.reel-comment-bar')?.querySelector('.reel-post-btn');
+        if (!btn) return;
+        btn.style.opacity = '0.35';
+        input.addEventListener('input', () => {
+            btn.style.opacity = input.value.trim() ? '1' : '0.35';
+        });
+    });
+
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,493 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Create Story - Chillr{% endblock %}
+
+{% block content %}
+
+<style>
+    /* ══════════════════════════════════════
+   Create Story — scoped styles
+══════════════════════════════════════ */
+
+    .create-story-page {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 24px;
+        overflow-y: auto;
+        min-height: 100%;
+    }
+
+    /* ── Page heading ── */
+    .create-story-heading {
+        text-align: center;
+        margin-bottom: 28px;
+        z-index: 2;
+    }
+
+    .create-story-heading h1 {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 800;
+        color: var(--text-main);
+        margin-bottom: 6px;
+        background: linear-gradient(135deg, #fff 30%, var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .create-story-heading p {
+        font-size: 0.875rem;
+        color: var(--text-muted);
+    }
+
+    /* ── Story phone frame ── */
+    .story-frame {
+        position: relative;
+        width: 100%;
+        max-width: 400px;
+        min-height: 700px;
+        border-radius: 40px;
+        border: 1px solid var(--border);
+        background: var(--bg-raised);
+        box-shadow: var(--shadow-lg), 0 0 60px rgba(245, 166, 35, 0.06);
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* ── Upload placeholder ── */
+    .story-placeholder {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        z-index: 20;
+        padding: 36px;
+        text-align: center;
+    }
+
+    .story-upload-icon-ring {
+        width: 80px;
+        height: 80px;
+        border-radius: var(--radius-full);
+        padding: 2px;
+        background: linear-gradient(135deg, var(--accent), #f97316);
+        margin-bottom: 8px;
+    }
+
+    .story-upload-icon-inner {
+        width: 100%;
+        height: 100%;
+        border-radius: var(--radius-full);
+        background: var(--bg-raised);
+        border: 2px solid var(--bg-deep);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .story-upload-icon-inner .material-icons {
+        font-size: 32px;
+        color: var(--accent);
+    }
+
+    .story-placeholder h2 {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--text-main);
+    }
+
+    .story-placeholder p {
+        font-size: 0.82rem;
+        color: var(--text-muted);
+        line-height: 1.5;
+        max-width: 200px;
+    }
+
+    .story-choose-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 10px;
+        padding: 11px 26px;
+        border-radius: var(--radius-full);
+        background: var(--accent);
+        color: #1a0e00;
+        font-weight: 700;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: background var(--transition), transform var(--transition);
+    }
+
+    .story-choose-label:hover {
+        background: var(--accent-hover);
+        transform: translateY(-1px);
+    }
+
+    .story-choose-label .material-icons {
+        font-size: 18px;
+    }
+
+    /* ── Media previews ── */
+    .story-img-preview,
+    .story-vid-preview {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: 0;
+        display: none;
+    }
+
+    /* ── Overlay actions (shown after upload) ── */
+    .story-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 30;
+        display: none;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    /* Top action pills */
+    .story-top-actions {
+        padding: 20px 18px;
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+    }
+
+    .story-action-pill {
+        width: 42px;
+        height: 42px;
+        border-radius: var(--radius-full);
+        background: rgba(8, 11, 20, 0.62);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background var(--transition), transform var(--transition);
+    }
+
+    .story-action-pill:hover {
+        background: rgba(8, 11, 20, 0.85);
+        transform: scale(1.08);
+    }
+
+    .story-action-pill .material-icons {
+        font-size: 20px;
+        color: #fff;
+    }
+
+    /* Bottom gradient controls */
+    .story-bottom-controls {
+        padding: 20px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        background: linear-gradient(to top, rgba(8, 11, 20, 0.95) 0%, transparent 100%);
+    }
+
+    .story-field {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-lg);
+        padding: 12px 16px;
+        color: #fff;
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.875rem;
+        outline: none;
+        transition: border-color var(--transition), background var(--transition);
+    }
+
+    .story-field::placeholder {
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    .story-field:focus {
+        border-color: rgba(245, 166, 35, 0.5);
+        background: rgba(245, 166, 35, 0.06);
+    }
+
+    textarea.story-field {
+        resize: none;
+        height: 90px;
+        line-height: 1.5;
+    }
+
+    /* Music upload row */
+    .story-music-label {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(12px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: var(--radius-lg);
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background var(--transition);
+    }
+
+    .story-music-label:hover {
+        background: rgba(255, 255, 255, 0.12);
+    }
+
+    .story-music-label .material-icons {
+        font-size: 20px;
+        color: var(--accent);
+    }
+
+    .story-music-label span.label-text {
+        font-size: 0.875rem;
+        color: rgba(255, 255, 255, 0.75);
+        flex: 1;
+    }
+
+    .story-music-label .music-name {
+        font-size: 0.75rem;
+        color: var(--accent);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100px;
+        display: none;
+    }
+
+    /* Submit button */
+    .story-submit-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .story-submit-btn {
+        flex: 1;
+        background: #fff;
+        color: #0d0d0d;
+        font-family: 'Syne', sans-serif;
+        font-weight: 800;
+        font-size: 0.9rem;
+        border: none;
+        border-radius: var(--radius-full);
+        padding: 13px 0;
+        cursor: pointer;
+        transition: opacity var(--transition), transform var(--transition);
+        letter-spacing: 0.2px;
+    }
+
+    .story-submit-btn:hover {
+        opacity: 0.9;
+        transform: translateY(-1px);
+    }
+
+    .story-submit-avatar-ring {
+        width: 44px;
+        height: 44px;
+        border-radius: var(--radius-full);
+        padding: 2px;
+        background: linear-gradient(135deg, var(--accent), #f97316);
+        flex-shrink: 0;
+    }
+
+    .story-submit-avatar-ring img {
+        width: 100%;
+        height: 100%;
+        border-radius: var(--radius-full);
+        object-fit: cover;
+        border: 2px solid #0d0d0d;
+        display: block;
+    }
+
+    /* ── Bottom nav tabs ── */
+    .create-story-tabs {
+        display: flex;
+        gap: 24px;
+        margin-top: 24px;
+        z-index: 2;
+    }
+
+    .create-story-tabs a,
+    .create-story-tabs span {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-decoration: none;
+        padding-bottom: 4px;
+        transition: color var(--transition);
+    }
+
+    .create-story-tabs a:hover {
+        color: var(--text-main);
+    }
+
+    .create-story-tabs .tab-active {
+        color: var(--text-main);
+        border-bottom: 2px solid var(--accent);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 480px) {
+        .story-frame {
+            border-radius: 28px;
+            min-height: 620px;
+        }
+
+        .create-story-page {
+            padding: 20px 12px;
+        }
+    }
+</style>
+
+<div class="create-story-page">
+
+    <!-- Heading -->
+    <div class="create-story-heading">
+        <h1>Create Story</h1>
+        <p>Share moments with music, captions and story text</p>
+    </div>
+
+    <!-- Story Form -->
+    <form method="POST" action="{% url 'create_story' %}" enctype="multipart/form-data" class="story-frame">
+
+        {% csrf_token %}
+
+        <!-- Upload placeholder -->
+        <div class="story-placeholder" id="storyPlaceholder">
+            <div class="story-upload-icon-ring">
+                <div class="story-upload-icon-inner">
+                    <span class="material-icons">add_a_photo</span>
+                </div>
+            </div>
+            <h2>Add to your story</h2>
+            <p>Upload an image or video to get started</p>
+            <label class="story-choose-label">
+                <span class="material-icons">upload</span>
+                Choose Media
+                <input type="file" name="image" id="storyInput" accept="image/*,video/*" hidden>
+            </label>
+        </div>
+
+        <!-- Image preview -->
+        <img id="storyImgPreview" class="story-img-preview" alt="preview">
+
+        <!-- Video preview -->
+        <video id="storyVidPreview" class="story-vid-preview" autoplay muted loop playsinline></video>
+
+        <!-- Overlay (shown after media selected) -->
+        <div class="story-overlay" id="storyOverlay">
+
+            <!-- Top pills -->
+            <div class="story-top-actions">
+                <button type="button" class="story-action-pill" title="Add text">
+                    <span class="material-icons">text_fields</span>
+                </button>
+                <button type="button" class="story-action-pill" title="Add emoji">
+                    <span class="material-icons">sentiment_satisfied</span>
+                </button>
+                <button type="button" class="story-action-pill" title="Effects">
+                    <span class="material-icons">auto_awesome</span>
+                </button>
+                <!-- Change media -->
+                <label class="story-action-pill" title="Change media">
+                    <span class="material-icons">sync</span>
+                    <input type="file" name="image" id="storyInputChange" accept="image/*,video/*" hidden>
+                </label>
+            </div>
+
+            <!-- Bottom controls -->
+            <div class="story-bottom-controls">
+
+                <!-- Caption -->
+                <textarea class="story-field" name="caption" maxlength="150" placeholder="Write a caption…"></textarea>
+
+                <!-- Story text -->
+                <input type="text" class="story-field" name="story_text" maxlength="40"
+                    placeholder="Story text (max 40 chars)">
+
+                <!-- Music upload -->
+                <label class="story-music-label" id="musicLabel">
+                    <span class="material-icons">music_note</span>
+                    <span class="label-text">Add Music</span>
+                    <span class="music-name" id="musicName"></span>
+                    <input type="file" name="music" id="musicInput" accept="audio/*" hidden>
+                </label>
+
+                <!-- Submit -->
+                <div class="story-submit-row">
+                    <div class="story-submit-avatar-ring">
+                        <img src="{{ uid.profile_pic.url }}" alt="{{ uid.username }}">
+                    </div>
+                    <button type="submit" class="story-submit-btn">
+                        Add to your story
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+    </form>
+
+    <!-- Nav tabs -->
+    <div class="create-story-tabs">
+        <a href="{% url 'create-post' %}">Post</a>
+        <span class="tab-active">Story</span>
+    </div>
+
+</div>
+
+<script>
+    const storyInput = document.getElementById('storyInput');
+    const storyInputChange = document.getElementById('storyInputChange');
+    const imgPreview = document.getElementById('storyImgPreview');
+    const vidPreview = document.getElementById('storyVidPreview');
+    const placeholder = document.getElementById('storyPlaceholder');
+    const overlay = document.getElementById('storyOverlay');
+    const musicInput = document.getElementById('musicInput');
+    const musicName = document.getElementById('musicName');
+
+    function loadMedia(file) {
+        if (!file) return;
+        const url = URL.createObjectURL(file);
+
+        placeholder.style.display = 'none';
+        overlay.style.display = 'flex';
+
+        if (file.type.startsWith('image/')) {
+            imgPreview.src = url;
+            imgPreview.style.display = 'block';
+            vidPreview.style.display = 'none';
+        } else if (file.type.startsWith('video/')) {
+            vidPreview.src = url;
+            vidPreview.style.display = 'block';
+            imgPreview.style.display = 'none';
+            vidPreview.play();
+        }
+    }
+
+    storyInput.addEventListener('change', function () { loadMedia(this.files[0]); });
+    storyInputChange.addEventListener('change', function () { loadMedia(this.files[0]); });
+
+    musicInput.addEventListener('change', function () {
+        if (this.files[0]) {
+            musicName.textContent = this.files[0].name;
+            musicName.style.display = 'block';
+        }
+    });
+</script>
+
+{% endblock %}

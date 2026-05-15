@@ -1,0 +1,352 @@
+{% extends 'myapp/base.html' %}
+{% load static %}
+
+{% block title %}Edit Profile - Chillr{% endblock %}
+
+{% block content %}
+
+<style>
+    /* ══════════════════════════════════════
+   Edit Profile — scoped styles
+══════════════════════════════════════ */
+
+    .edit-profile-page {
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        justify-content: center;
+        padding: 36px 24px 60px;
+    }
+
+    .edit-profile-inner {
+        width: 100%;
+        max-width: 600px;
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* ── Page heading ── */
+    .edit-profile-heading {
+        font-family: 'Syne', sans-serif;
+        font-size: 1.4rem;
+        font-weight: 800;
+        color: var(--text-main);
+        background: linear-gradient(135deg, #fff 30%, var(--accent));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* ── Card ── */
+    .edit-profile-card {
+        background: var(--bg-surface);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-xl);
+        padding: 28px;
+        box-shadow: var(--shadow-lg);
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+    }
+
+    /* ── Avatar row ── */
+    .edit-avatar-row {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .edit-avatar-ring {
+        width: 72px;
+        height: 72px;
+        border-radius: var(--radius-full);
+        padding: 2px;
+        background: linear-gradient(135deg, var(--accent), #f97316);
+        flex-shrink: 0;
+        cursor: pointer;
+    }
+
+    .edit-avatar-ring img {
+        width: 100%;
+        height: 100%;
+        border-radius: var(--radius-full);
+        object-fit: cover;
+        border: 2px solid var(--bg-deep);
+        display: block;
+    }
+
+    .edit-avatar-info {
+        flex: 1;
+    }
+
+    .edit-avatar-username {
+        font-weight: 700;
+        font-size: 0.95rem;
+        color: var(--text-main);
+        margin-bottom: 6px;
+    }
+
+    .btn-change-photo {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: var(--radius-md);
+        background: var(--accent-dim);
+        border: 1px solid rgba(245, 166, 35, 0.3);
+        color: var(--accent);
+        font-weight: 700;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: all var(--transition);
+    }
+
+    .btn-change-photo:hover {
+        background: rgba(245, 166, 35, 0.25);
+        border-color: rgba(245, 166, 35, 0.5);
+    }
+
+    .btn-change-photo .material-icons {
+        font-size: 16px;
+    }
+
+    /* ── Form fields ── */
+    .edit-field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+    }
+
+    .edit-field-label {
+        font-size: 0.78rem;
+        font-weight: 700;
+        color: var(--text-muted);
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+    }
+
+    .edit-field-input {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-md);
+        padding: 12px 16px;
+        color: var(--text-main);
+        font-family: 'DM Sans', sans-serif;
+        font-size: 0.9rem;
+        outline: none;
+        transition: border-color var(--transition), background var(--transition);
+    }
+
+    .edit-field-input::placeholder {
+        color: var(--text-dim);
+    }
+
+    .edit-field-input:focus {
+        border-color: rgba(245, 166, 35, 0.45);
+        background: rgba(245, 166, 35, 0.03);
+    }
+
+    textarea.edit-field-input {
+        resize: none;
+        height: 100px;
+        line-height: 1.6;
+    }
+
+    /* Character hint */
+    .edit-field-hint {
+        font-size: 0.72rem;
+        color: var(--text-dim);
+        text-align: right;
+    }
+
+    /* ── Divider ── */
+    .edit-section-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 4px 0;
+    }
+
+    /* ── Footer buttons ── */
+    .edit-profile-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding-top: 8px;
+        border-top: 1px solid var(--border);
+    }
+
+    .btn-cancel {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 22px;
+        border-radius: var(--radius-md);
+        background: var(--bg-hover);
+        border: 1px solid var(--border);
+        color: var(--text-main);
+        font-weight: 600;
+        font-size: 0.875rem;
+        cursor: pointer;
+        transition: all var(--transition);
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .btn-cancel:hover {
+        border-color: var(--border-hover);
+        background: rgba(255, 255, 255, 0.08);
+    }
+
+    .btn-save {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 26px;
+        border-radius: var(--radius-md);
+        background: var(--accent);
+        color: #1a0e00;
+        font-weight: 700;
+        font-size: 0.875rem;
+        border: none;
+        cursor: pointer;
+        transition: background var(--transition), transform var(--transition);
+        box-shadow: var(--shadow-accent);
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .btn-save:hover {
+        background: var(--accent-hover);
+        transform: translateY(-1px);
+    }
+
+    .btn-save .material-icons {
+        font-size: 17px;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+        .edit-profile-page {
+            padding: 20px 12px 60px;
+        }
+
+        .edit-profile-card {
+            padding: 20px 16px;
+        }
+
+        .edit-profile-footer {
+            flex-direction: column-reverse;
+        }
+
+        .btn-cancel,
+        .btn-save {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="edit-profile-page">
+    <div class="edit-profile-inner">
+
+        <!-- Heading -->
+        <h2 class="edit-profile-heading">Edit Profile</h2>
+
+        <div class="edit-profile-card">
+            <form action="{% url 'edit-profile' %}" method="post" enctype="multipart/form-data"
+                style="display:flex;flex-direction:column;gap:22px;">
+                {% csrf_token %}
+
+                <!-- ── Avatar row ── -->
+                <div class="edit-avatar-row">
+                    <div class="edit-avatar-ring" onclick="document.getElementById('imageInput').click()">
+                        <img id="profilePreview" src="{{ uid.profile_pic.url }}" alt="{{ uid.username }}">
+                    </div>
+                    <div class="edit-avatar-info">
+                        <p class="edit-avatar-username">{{ uid.username }}</p>
+                        <label class="btn-change-photo">
+                            <span class="material-icons">photo_camera</span>
+                            Change Photo
+                            <input type="file" id="imageInput" name="profile_pic" accept="image/*" hidden>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="edit-section-divider"></div>
+
+                <!-- ── Username ── -->
+                <div class="edit-field-group">
+                    <label class="edit-field-label">Username</label>
+                    <input type="text" class="edit-field-input" name="username" value="{{ uid.username }}"
+                        placeholder="Your username">
+                </div>
+
+                <!-- ── Name ── -->
+                <div class="edit-field-group">
+                    <label class="edit-field-label">Name</label>
+                    <input type="text" class="edit-field-input" name="name" value="{{ uid.name|default:'' }}"
+                        placeholder="Your full name">
+                </div>
+
+                <!-- ── Bio ── -->
+                <div class="edit-field-group">
+                    <label class="edit-field-label">Bio</label>
+                    <input type="text" class="edit-field-input" name="bio" value="{{ uid.bio|default:'' }}"
+                        placeholder="A short bio" maxlength="80" id="bioInput">
+                    <span class="edit-field-hint" id="bioCount">0 / 80</span>
+                </div>
+
+                <!-- ── Description ── -->
+                <div class="edit-field-group">
+                    <label class="edit-field-label">Description</label>
+                    <textarea class="edit-field-input" name="description" placeholder="Tell people about yourself…"
+                        maxlength="300" id="descInput">{{ uid.description|default:'' }}</textarea>
+                    <span class="edit-field-hint" id="descCount">0 / 300</span>
+                </div>
+
+                <!-- ── Website ── -->
+                <div class="edit-field-group">
+                    <label class="edit-field-label">Website / Link</label>
+                    <input type="text" class="edit-field-input" name="website" value="{{ uid.link|default:'' }}"
+                        placeholder="https://yourwebsite.com">
+                </div>
+
+                <!-- ── Footer ── -->
+                <div class="edit-profile-footer">
+                    <button type="button" class="btn-cancel" onclick="window.history.back()">Cancel</button>
+                    <button type="submit" class="btn-save">
+                        <span class="material-icons">check</span>
+                        Save Changes
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    /* Live avatar preview */
+    document.getElementById('imageInput').addEventListener('change', function () {
+        const file = this.files[0];
+        if (file) {
+            document.getElementById('profilePreview').src = URL.createObjectURL(file);
+        }
+    });
+
+    /* Char counters */
+    function initCounter(inputId, counterId, max) {
+        const input = document.getElementById(inputId);
+        const counter = document.getElementById(counterId);
+        function update() { counter.textContent = input.value.length + ' / ' + max; }
+        input.addEventListener('input', update);
+        update();
+    }
+    initCounter('bioInput', 'bioCount', 80);
+    initCounter('descInput', 'descCount', 300);
+</script>
+
+{% endblock %}
